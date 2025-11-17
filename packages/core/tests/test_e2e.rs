@@ -301,12 +301,12 @@ fn test_e2e_complete_pipeline() {
 
     // Parse
     let ast = parse_lumos_file(lumos_code).expect("Failed to parse");
-    assert_eq!(ast.structs.len(), 1);
+    assert_eq!(ast.items.len(), 1);
 
     // Transform to IR
     let ir = transform_to_ir(ast).expect("Failed to transform");
     assert_eq!(ir.len(), 1);
-    assert_eq!(ir[0].name, "TestAccount");
+    assert_eq!(ir[0].name(), "TestAccount");
 
     // Generate Rust
     let rust_code = rust::generate(&ir[0]);

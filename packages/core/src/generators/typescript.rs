@@ -5,11 +5,22 @@
 //!
 //! Generates TypeScript interfaces and Borsh schemas from IR for client-side integration.
 
-use crate::ir::{TypeDefinition, TypeInfo};
+use crate::ir::{StructDefinition, TypeDefinition, TypeInfo};
 use std::collections::HashSet;
 
 /// Generate TypeScript code from a type definition
 pub fn generate(type_def: &TypeDefinition) -> String {
+    match type_def {
+        TypeDefinition::Struct(struct_def) => generate_struct(struct_def),
+        TypeDefinition::Enum(_) => {
+            // TODO: Implement enum generation in Week 3
+            String::new()
+        }
+    }
+}
+
+/// Generate TypeScript code from a struct definition
+fn generate_struct(struct_def: &StructDefinition) -> String {
     let mut output = String::new();
 
     // Add file header
@@ -17,7 +28,7 @@ pub fn generate(type_def: &TypeDefinition) -> String {
     output.push_str("// DO NOT EDIT - Changes will be overwritten\n\n");
 
     // Collect required imports
-    let imports = collect_imports(type_def);
+    let imports = collect_struct_imports(struct_def);
     if !imports.is_empty() {
         for import in imports {
             output.push_str(&format!("{};\n", import));
@@ -26,12 +37,12 @@ pub fn generate(type_def: &TypeDefinition) -> String {
     }
 
     // Generate interface
-    output.push_str(&generate_interface(type_def));
+    output.push_str(&generate_struct_interface(struct_def));
     output.push_str("\n");
 
     // Generate Borsh schema if Solana type
-    if type_def.metadata.solana {
-        output.push_str(&generate_borsh_schema(type_def));
+    if struct_def.metadata.solana {
+        output.push_str(&generate_struct_borsh_schema(struct_def));
     }
 
     output
@@ -48,8 +59,10 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
     // Collect all imports needed
     let mut all_imports = HashSet::new();
     for type_def in type_defs {
-        let imports = collect_imports(type_def);
-        all_imports.extend(imports);
+        if let TypeDefinition::Struct(s) = type_def {
+            let imports = collect_struct_imports(s);
+            all_imports.extend(imports);
+        }
     }
 
     // Write imports
@@ -67,14 +80,22 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
         if i > 0 {
             output.push_str("\n");
         }
-        output.push_str(&generate_interface(type_def));
 
-        // Add Borsh schema for Solana types
-        if type_def.metadata.solana {
-            output.push_str("\n");
-            output.push_str(&generate_borsh_schema(type_def));
-            if i < type_defs.len() - 1 {
-                output.push_str("\n");
+        match type_def {
+            TypeDefinition::Struct(s) => {
+                output.push_str(&generate_struct_interface(s));
+
+                // Add Borsh schema for Solana types
+                if s.metadata.solana {
+                    output.push_str("\n");
+                    output.push_str(&generate_struct_borsh_schema(s));
+                    if i < type_defs.len() - 1 {
+                        output.push_str("\n");
+                    }
+                }
+            }
+            TypeDefinition::Enum(_) => {
+                // TODO: Generate enum code in Week 3
             }
         }
     }
@@ -82,15 +103,15 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
     output
 }
 
-/// Generate TypeScript interface
-fn generate_interface(type_def: &TypeDefinition) -> String {
+/// Generate TypeScript interface for struct
+fn generate_struct_interface(struct_def: &StructDefinition) -> String {
     let mut output = String::new();
 
     // Generate interface
-    output.push_str(&format!("export interface {} {{\n", type_def.name));
+    output.push_str(&format!("export interface {} {{\n", struct_def.name));
 
     // Generate fields
-    for field in &type_def.fields {
+    for field in &struct_def.fields {
         let ts_type = map_type_to_typescript(&field.type_info);
         let optional_marker = if field.optional { "?" } else { "" };
         output.push_str(&format!("  {}{}: {};\n", field.name, optional_marker, ts_type));
@@ -101,17 +122,17 @@ fn generate_interface(type_def: &TypeDefinition) -> String {
     output
 }
 
-/// Generate Borsh schema for serialization
-fn generate_borsh_schema(type_def: &TypeDefinition) -> String {
+/// Generate Borsh schema for struct serialization
+fn generate_struct_borsh_schema(struct_def: &StructDefinition) -> String {
     let mut output = String::new();
 
     output.push_str(&format!(
         "export const {}Schema = borsh.struct([\n",
-        type_def.name
+        struct_def.name
     ));
 
     // Generate Borsh field definitions
-    for field in &type_def.fields {
+    for field in &struct_def.fields {
         let borsh_type = map_type_to_borsh(&field.type_info);
         output.push_str(&format!("  {}('{}'),\n", borsh_type, field.name));
     }
@@ -121,15 +142,15 @@ fn generate_borsh_schema(type_def: &TypeDefinition) -> String {
     output
 }
 
-/// Collect required imports based on type definition
-fn collect_imports(type_def: &TypeDefinition) -> HashSet<String> {
+/// Collect required imports based on struct definition
+fn collect_struct_imports(struct_def: &StructDefinition) -> HashSet<String> {
     let mut imports = HashSet::new();
 
     // Check field types for imports
     let mut needs_publickey = false;
-    let needs_borsh = type_def.metadata.solana;
+    let needs_borsh = struct_def.metadata.solana;
 
-    for field in &type_def.fields {
+    for field in &struct_def.fields {
         collect_imports_from_type(&field.type_info, &mut needs_publickey);
     }
 
@@ -244,11 +265,11 @@ fn map_type_to_borsh(type_info: &TypeInfo) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{FieldDefinition, Metadata, TypeDefinition, TypeInfo};
+    use crate::ir::{FieldDefinition, Metadata, StructDefinition, TypeDefinition, TypeInfo};
 
     #[test]
     fn generates_simple_interface() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "User".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -263,7 +284,7 @@ mod tests {
                 },
             ],
             metadata: Metadata::default(),
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("export interface User"));
@@ -273,7 +294,7 @@ mod tests {
 
     #[test]
     fn generates_solana_interface_with_borsh() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "UserAccount".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -291,7 +312,7 @@ mod tests {
                 solana: true,
                 attributes: vec!["account".to_string()],
             },
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("import { PublicKey } from '@solana/web3.js'"));
@@ -306,7 +327,7 @@ mod tests {
 
     #[test]
     fn generates_optional_fields() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Profile".to_string(),
             fields: vec![FieldDefinition {
                 name: "email".to_string(),
@@ -314,7 +335,7 @@ mod tests {
                 optional: true,
             }],
             metadata: Metadata::default(),
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("email?: string | undefined"));
@@ -322,7 +343,7 @@ mod tests {
 
     #[test]
     fn generates_array_fields() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Team".to_string(),
             fields: vec![FieldDefinition {
                 name: "members".to_string(),
@@ -333,7 +354,7 @@ mod tests {
                 solana: true,
                 attributes: vec![],
             },
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("members: number[]"));
@@ -343,16 +364,16 @@ mod tests {
     #[test]
     fn generates_module_with_multiple_types() {
         let type_defs = vec![
-            TypeDefinition {
+            TypeDefinition::Struct(StructDefinition {
                 name: "User".to_string(),
                 fields: vec![],
                 metadata: Metadata::default(),
-            },
-            TypeDefinition {
+            }),
+            TypeDefinition::Struct(StructDefinition {
                 name: "Post".to_string(),
                 fields: vec![],
                 metadata: Metadata::default(),
-            },
+            }),
         ];
 
         let code = generate_module(&type_defs);
@@ -362,7 +383,7 @@ mod tests {
 
     #[test]
     fn maps_bigint_types() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "BigNumbers".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -377,7 +398,7 @@ mod tests {
                 },
             ],
             metadata: Metadata::default(),
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("big_unsigned: bigint"));

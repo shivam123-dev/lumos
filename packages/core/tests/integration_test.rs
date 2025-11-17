@@ -22,14 +22,22 @@ fn test_parse_gaming_schema() {
     let ast = parse_lumos_file(&content)
         .expect("Failed to parse gaming schema");
 
-    // Should have 4 structs: PlayerAccount, GameItem, Leaderboard, MatchResult
-    assert_eq!(ast.structs.len(), 4);
+    // Should have 4 items: PlayerAccount, GameItem, Leaderboard, MatchResult
+    assert_eq!(ast.items.len(), 4);
 
     // Check struct names
-    assert_eq!(ast.structs[0].name, "PlayerAccount");
-    assert_eq!(ast.structs[1].name, "GameItem");
-    assert_eq!(ast.structs[2].name, "Leaderboard");
-    assert_eq!(ast.structs[3].name, "MatchResult");
+    if let lumos_core::ast::Item::Struct(s) = &ast.items[0] {
+        assert_eq!(s.name, "PlayerAccount");
+    }
+    if let lumos_core::ast::Item::Struct(s) = &ast.items[1] {
+        assert_eq!(s.name, "GameItem");
+    }
+    if let lumos_core::ast::Item::Struct(s) = &ast.items[2] {
+        assert_eq!(s.name, "Leaderboard");
+    }
+    if let lumos_core::ast::Item::Struct(s) = &ast.items[3] {
+        assert_eq!(s.name, "MatchResult");
+    }
 
     // Transform to IR
     let ir = transform_to_ir(ast)
@@ -38,8 +46,8 @@ fn test_parse_gaming_schema() {
     assert_eq!(ir.len(), 4);
 
     // Verify PlayerAccount has @solana and @account attributes
-    assert!(ir[0].metadata.solana);
-    assert!(ir[0].metadata.attributes.contains(&"account".to_string()));
+    assert!(ir[0].metadata().solana);
+    assert!(ir[0].metadata().attributes.contains(&"account".to_string()));
 }
 
 #[test]
@@ -55,8 +63,8 @@ fn test_parse_nft_marketplace_schema() {
     let ast = parse_lumos_file(&content)
         .expect("Failed to parse NFT marketplace schema");
 
-    // Should have 4 structs: Marketplace, NftListing, NftMetadata, PurchaseReceipt
-    assert_eq!(ast.structs.len(), 4);
+    // Should have 4 items: Marketplace, NftListing, NftMetadata, PurchaseReceipt
+    assert_eq!(ast.items.len(), 4);
 
     let ir = transform_to_ir(ast)
         .expect("Failed to transform to IR");
@@ -77,7 +85,7 @@ fn test_parse_defi_staking_schema() {
     let ast = parse_lumos_file(&content)
         .expect("Failed to parse DeFi staking schema");
 
-    assert!(ast.structs.len() > 0);
+    assert!(ast.items.len() > 0);
 
     let ir = transform_to_ir(ast)
         .expect("Failed to transform to IR");
@@ -98,7 +106,7 @@ fn test_parse_token_vesting_schema() {
     let ast = parse_lumos_file(&content)
         .expect("Failed to parse token vesting schema");
 
-    assert!(ast.structs.len() > 0);
+    assert!(ast.items.len() > 0);
 
     let ir = transform_to_ir(ast)
         .expect("Failed to transform to IR");
@@ -119,7 +127,7 @@ fn test_parse_dao_governance_schema() {
     let ast = parse_lumos_file(&content)
         .expect("Failed to parse DAO governance schema");
 
-    assert!(ast.structs.len() > 0);
+    assert!(ast.items.len() > 0);
 
     let ir = transform_to_ir(ast)
         .expect("Failed to transform to IR");

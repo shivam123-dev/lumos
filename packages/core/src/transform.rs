@@ -7,10 +7,14 @@
 //! into the Intermediate Representation (IR) used by code generators.
 
 use crate::ast::{
-    FieldDef as AstField, Item as AstItem, LumosFile, StructDef as AstStruct, TypeSpec as AstType,
+    EnumDef as AstEnum, EnumVariant as AstEnumVariant, FieldDef as AstField, Item as AstItem,
+    LumosFile, StructDef as AstStruct, TypeSpec as AstType,
 };
 use crate::error::Result;
-use crate::ir::{FieldDefinition, Metadata, TypeDefinition, TypeInfo};
+use crate::ir::{
+    EnumDefinition, EnumVariantDefinition, FieldDefinition, Metadata, StructDefinition,
+    TypeDefinition, TypeInfo,
+};
 
 /// Transform a parsed LUMOS file (AST) into IR
 pub fn transform_to_ir(file: LumosFile) -> Result<Vec<TypeDefinition>> {
@@ -20,11 +24,11 @@ pub fn transform_to_ir(file: LumosFile) -> Result<Vec<TypeDefinition>> {
         match item {
             AstItem::Struct(struct_def) => {
                 let type_def = transform_struct(struct_def)?;
-                type_defs.push(type_def);
+                type_defs.push(TypeDefinition::Struct(type_def));
             }
-            AstItem::Enum(_enum_def) => {
-                // TODO: Implement enum transformation in next step
-                // For now, skip enums to keep existing tests passing
+            AstItem::Enum(enum_def) => {
+                let type_def = transform_enum(enum_def)?;
+                type_defs.push(TypeDefinition::Enum(type_def));
             }
         }
     }
@@ -33,9 +37,9 @@ pub fn transform_to_ir(file: LumosFile) -> Result<Vec<TypeDefinition>> {
 }
 
 /// Transform a single struct definition
-fn transform_struct(struct_def: AstStruct) -> Result<TypeDefinition> {
+fn transform_struct(struct_def: AstStruct) -> Result<StructDefinition> {
     // Extract metadata from attributes BEFORE consuming struct
-    let metadata = extract_metadata(&struct_def);
+    let metadata = extract_struct_metadata(&struct_def);
 
     let name = struct_def.name;
 
@@ -46,11 +50,63 @@ fn transform_struct(struct_def: AstStruct) -> Result<TypeDefinition> {
         .map(transform_field)
         .collect::<Result<Vec<_>>>()?;
 
-    Ok(TypeDefinition {
+    Ok(StructDefinition {
         name,
         fields,
         metadata,
     })
+}
+
+/// Transform a single enum definition
+fn transform_enum(enum_def: AstEnum) -> Result<EnumDefinition> {
+    // Extract metadata from attributes BEFORE consuming enum
+    let metadata = extract_enum_metadata(&enum_def);
+
+    let name = enum_def.name;
+
+    // Transform variants
+    let variants = enum_def
+        .variants
+        .into_iter()
+        .map(transform_enum_variant)
+        .collect::<Result<Vec<_>>>()?;
+
+    Ok(EnumDefinition {
+        name,
+        variants,
+        metadata,
+    })
+}
+
+/// Transform an enum variant
+fn transform_enum_variant(variant: AstEnumVariant) -> Result<EnumVariantDefinition> {
+    match variant {
+        AstEnumVariant::Unit { name, .. } => Ok(EnumVariantDefinition::Unit { name }),
+
+        AstEnumVariant::Tuple { name, types, .. } => {
+            let transformed_types = types
+                .into_iter()
+                .map(|t| transform_type(t, false))
+                .collect::<Result<Vec<_>>>()?;
+
+            Ok(EnumVariantDefinition::Tuple {
+                name,
+                types: transformed_types,
+            })
+        }
+
+        AstEnumVariant::Struct { name, fields, .. } => {
+            let transformed_fields = fields
+                .into_iter()
+                .map(transform_field)
+                .collect::<Result<Vec<_>>>()?;
+
+            Ok(EnumVariantDefinition::Struct {
+                name,
+                fields: transformed_fields,
+            })
+        }
+    }
 }
 
 /// Transform a field definition
@@ -110,14 +166,31 @@ fn map_type_alias(name: &str) -> String {
 }
 
 /// Extract metadata from struct attributes
-fn extract_metadata(struct_def: &AstStruct) -> Metadata {
+fn extract_struct_metadata(struct_def: &AstStruct) -> Metadata {
     let mut metadata = Metadata::default();
 
     // Check for @solana attribute
     metadata.solana = struct_def.has_attribute("solana");
 
-    // Collect all other attributes
+    // Collect all attributes
     metadata.attributes = struct_def
+        .attributes
+        .iter()
+        .map(|attr| attr.name.clone())
+        .collect();
+
+    metadata
+}
+
+/// Extract metadata from enum attributes
+fn extract_enum_metadata(enum_def: &AstEnum) -> Metadata {
+    let mut metadata = Metadata::default();
+
+    // Check for @solana attribute
+    metadata.solana = enum_def.has_attribute("solana");
+
+    // Collect all attributes
+    metadata.attributes = enum_def
         .attributes
         .iter()
         .map(|attr| attr.name.clone())
@@ -144,8 +217,13 @@ mod tests {
         let ir = transform_to_ir(ast).unwrap();
 
         assert_eq!(ir.len(), 1);
-        assert_eq!(ir[0].name, "User");
-        assert_eq!(ir[0].fields.len(), 2);
+        match &ir[0] {
+            TypeDefinition::Struct(s) => {
+                assert_eq!(s.name, "User");
+                assert_eq!(s.fields.len(), 2);
+            }
+            _ => panic!("Expected struct type definition"),
+        }
     }
 
     #[test]
@@ -161,10 +239,15 @@ mod tests {
         let ast = parse_lumos_file(input).unwrap();
         let ir = transform_to_ir(ast).unwrap();
 
-        let fields = &ir[0].fields;
-        assert!(matches!(fields[0].type_info, TypeInfo::Primitive(ref s) if s == "u64"));
-        assert!(matches!(fields[1].type_info, TypeInfo::Primitive(ref s) if s == "String"));
-        assert!(matches!(fields[2].type_info, TypeInfo::Primitive(ref s) if s == "bool"));
+        match &ir[0] {
+            TypeDefinition::Struct(s) => {
+                let fields = &s.fields;
+                assert!(matches!(fields[0].type_info, TypeInfo::Primitive(ref t) if t == "u64"));
+                assert!(matches!(fields[1].type_info, TypeInfo::Primitive(ref t) if t == "String"));
+                assert!(matches!(fields[2].type_info, TypeInfo::Primitive(ref t) if t == "bool"));
+            }
+            _ => panic!("Expected struct type definition"),
+        }
     }
 
     #[test]
@@ -178,9 +261,14 @@ mod tests {
         let ast = parse_lumos_file(input).unwrap();
         let ir = transform_to_ir(ast).unwrap();
 
-        let field = &ir[0].fields[0];
-        assert!(field.optional);
-        assert!(matches!(field.type_info, TypeInfo::Option(_)));
+        match &ir[0] {
+            TypeDefinition::Struct(s) => {
+                let field = &s.fields[0];
+                assert!(field.optional);
+                assert!(matches!(field.type_info, TypeInfo::Option(_)));
+            }
+            _ => panic!("Expected struct type definition"),
+        }
     }
 
     #[test]
@@ -194,8 +282,13 @@ mod tests {
         let ast = parse_lumos_file(input).unwrap();
         let ir = transform_to_ir(ast).unwrap();
 
-        let field = &ir[0].fields[0];
-        assert!(matches!(field.type_info, TypeInfo::Array(_)));
+        match &ir[0] {
+            TypeDefinition::Struct(s) => {
+                let field = &s.fields[0];
+                assert!(matches!(field.type_info, TypeInfo::Array(_)));
+            }
+            _ => panic!("Expected struct type definition"),
+        }
     }
 
     #[test]
@@ -211,7 +304,130 @@ mod tests {
         let ast = parse_lumos_file(input).unwrap();
         let ir = transform_to_ir(ast).unwrap();
 
-        assert!(ir[0].metadata.solana);
-        assert!(ir[0].metadata.attributes.contains(&"account".to_string()));
+        match &ir[0] {
+            TypeDefinition::Struct(s) => {
+                assert!(s.metadata.solana);
+                assert!(s.metadata.attributes.contains(&"account".to_string()));
+            }
+            _ => panic!("Expected struct type definition"),
+        }
+    }
+
+    #[test]
+    fn test_transform_unit_enum() {
+        let input = r#"
+            #[solana]
+            enum GameState {
+                Inactive,
+                Active,
+                Paused,
+                Finished,
+            }
+        "#;
+
+        let ast = parse_lumos_file(input).unwrap();
+        let ir = transform_to_ir(ast).unwrap();
+
+        assert_eq!(ir.len(), 1);
+        match &ir[0] {
+            TypeDefinition::Enum(e) => {
+                assert_eq!(e.name, "GameState");
+                assert_eq!(e.variants.len(), 4);
+                assert!(e.metadata.solana);
+                assert!(e.is_unit_only());
+
+                // Check variant names
+                assert_eq!(e.variants[0].name(), "Inactive");
+                assert_eq!(e.variants[1].name(), "Active");
+                assert_eq!(e.variants[2].name(), "Paused");
+                assert_eq!(e.variants[3].name(), "Finished");
+            }
+            _ => panic!("Expected enum type definition"),
+        }
+    }
+
+    #[test]
+    fn test_transform_tuple_enum() {
+        let input = r#"
+            enum GameEvent {
+                PlayerJoined(PublicKey),
+                ScoreUpdated(PublicKey, u64),
+            }
+        "#;
+
+        let ast = parse_lumos_file(input).unwrap();
+        let ir = transform_to_ir(ast).unwrap();
+
+        assert_eq!(ir.len(), 1);
+        match &ir[0] {
+            TypeDefinition::Enum(e) => {
+                assert_eq!(e.name, "GameEvent");
+                assert_eq!(e.variants.len(), 2);
+                assert!(e.has_tuple_variants());
+
+                // Check tuple variant types
+                match &e.variants[0] {
+                    EnumVariantDefinition::Tuple { name, types } => {
+                        assert_eq!(name, "PlayerJoined");
+                        assert_eq!(types.len(), 1);
+                    }
+                    _ => panic!("Expected tuple variant"),
+                }
+
+                match &e.variants[1] {
+                    EnumVariantDefinition::Tuple { name, types } => {
+                        assert_eq!(name, "ScoreUpdated");
+                        assert_eq!(types.len(), 2);
+                    }
+                    _ => panic!("Expected tuple variant"),
+                }
+            }
+            _ => panic!("Expected enum type definition"),
+        }
+    }
+
+    #[test]
+    fn test_transform_struct_enum() {
+        let input = r#"
+            enum GameInstruction {
+                Initialize {
+                    authority: PublicKey,
+                    max_players: u8,
+                },
+                Terminate,
+            }
+        "#;
+
+        let ast = parse_lumos_file(input).unwrap();
+        let ir = transform_to_ir(ast).unwrap();
+
+        assert_eq!(ir.len(), 1);
+        match &ir[0] {
+            TypeDefinition::Enum(e) => {
+                assert_eq!(e.name, "GameInstruction");
+                assert_eq!(e.variants.len(), 2);
+                assert!(e.has_struct_variants());
+
+                // Check struct variant fields
+                match &e.variants[0] {
+                    EnumVariantDefinition::Struct { name, fields } => {
+                        assert_eq!(name, "Initialize");
+                        assert_eq!(fields.len(), 2);
+                        assert_eq!(fields[0].name, "authority");
+                        assert_eq!(fields[1].name, "max_players");
+                    }
+                    _ => panic!("Expected struct variant"),
+                }
+
+                // Check unit variant
+                match &e.variants[1] {
+                    EnumVariantDefinition::Unit { name } => {
+                        assert_eq!(name, "Terminate");
+                    }
+                    _ => panic!("Expected unit variant"),
+                }
+            }
+            _ => panic!("Expected enum type definition"),
+        }
     }
 }

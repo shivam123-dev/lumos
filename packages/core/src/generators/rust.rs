@@ -5,11 +5,22 @@
 //!
 //! Generates production-ready Rust code from IR for use in Solana programs.
 
-use crate::ir::{TypeDefinition, TypeInfo};
+use crate::ir::{StructDefinition, TypeDefinition, TypeInfo};
 use std::collections::HashSet;
 
 /// Generate Rust code from a type definition
 pub fn generate(type_def: &TypeDefinition) -> String {
+    match type_def {
+        TypeDefinition::Struct(struct_def) => generate_struct(struct_def),
+        TypeDefinition::Enum(_) => {
+            // TODO: Implement enum generation in Week 3
+            String::new()
+        }
+    }
+}
+
+/// Generate Rust code from a struct definition
+fn generate_struct(struct_def: &StructDefinition) -> String {
     let mut output = String::new();
 
     // Add file header
@@ -17,11 +28,11 @@ pub fn generate(type_def: &TypeDefinition) -> String {
     output.push_str("// DO NOT EDIT - Changes will be overwritten\n\n");
 
     // Determine if this struct uses Anchor (#[account])
-    let use_anchor = type_def.metadata.solana
-        && type_def.metadata.attributes.contains(&"account".to_string());
+    let use_anchor = struct_def.metadata.solana
+        && struct_def.metadata.attributes.contains(&"account".to_string());
 
     // Collect required imports
-    let imports = collect_imports(type_def);
+    let imports = collect_struct_imports(struct_def);
     if !imports.is_empty() {
         for import in imports {
             output.push_str(&format!("use {};\n", import));
@@ -30,7 +41,7 @@ pub fn generate(type_def: &TypeDefinition) -> String {
     }
 
     // Generate derives using context-aware function
-    let derives = generate_derives_with_context(type_def, use_anchor);
+    let derives = generate_struct_derives_with_context(struct_def, use_anchor);
     if !derives.is_empty() {
         output.push_str(&format!("#[derive({})]\n", derives.join(", ")));
     }
@@ -41,10 +52,10 @@ pub fn generate(type_def: &TypeDefinition) -> String {
     }
 
     // Generate struct definition
-    output.push_str(&format!("pub struct {} {{\n", type_def.name));
+    output.push_str(&format!("pub struct {} {{\n", struct_def.name));
 
     // Generate fields
-    for field in &type_def.fields {
+    for field in &struct_def.fields {
         let rust_type = map_type_to_rust(&field.type_info);
         output.push_str(&format!("    pub {}: {},\n", field.name, rust_type));
     }
@@ -63,9 +74,13 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
     output.push_str("// DO NOT EDIT - Changes will be overwritten\n\n");
 
     // Check if ANY struct uses #[account]
-    let has_account_attr = type_defs
-        .iter()
-        .any(|t| t.metadata.solana && t.metadata.attributes.contains(&"account".to_string()));
+    let has_account_attr = type_defs.iter().any(|t| {
+        if let TypeDefinition::Struct(s) = t {
+            s.metadata.solana && s.metadata.attributes.contains(&"account".to_string())
+        } else {
+            false
+        }
+    });
 
     // Collect all imports needed
     let mut all_imports = HashSet::new();
@@ -77,16 +92,20 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
     } else {
         // Otherwise collect individual imports
         for type_def in type_defs {
-            let imports = collect_imports(type_def);
-            all_imports.extend(imports);
+            if let TypeDefinition::Struct(s) = type_def {
+                let imports = collect_struct_imports(s);
+                all_imports.extend(imports);
+            }
         }
     }
 
     // Check for Solana-specific types
     let mut needs_pubkey = false;
     for type_def in type_defs {
-        for field in &type_def.fields {
-            check_needs_solana_types(&field.type_info, &mut needs_pubkey);
+        if let TypeDefinition::Struct(s) = type_def {
+            for field in &s.fields {
+                check_needs_solana_types(&field.type_info, &mut needs_pubkey);
+            }
         }
     }
 
@@ -109,7 +128,15 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
         if i > 0 {
             output.push_str("\n");
         }
-        output.push_str(&generate_struct_with_context(type_def, has_account_attr));
+
+        match type_def {
+            TypeDefinition::Struct(s) => {
+                output.push_str(&generate_struct_with_context(s, has_account_attr));
+            }
+            TypeDefinition::Enum(_) => {
+                // TODO: Generate enum code in Week 3
+            }
+        }
     }
 
     output
@@ -134,30 +161,30 @@ fn check_needs_solana_types(type_info: &TypeInfo, needs_pubkey: &mut bool) {
 }
 
 /// Generate just the struct definition (without imports/header)
-fn generate_struct_only(type_def: &TypeDefinition) -> String {
-    generate_struct_with_context(type_def, false)
+fn generate_struct_only(struct_def: &StructDefinition) -> String {
+    generate_struct_with_context(struct_def, false)
 }
 
 /// Generate struct with context (e.g., whether module uses Anchor)
-fn generate_struct_with_context(type_def: &TypeDefinition, use_anchor: bool) -> String {
+fn generate_struct_with_context(struct_def: &StructDefinition, use_anchor: bool) -> String {
     let mut output = String::new();
 
     // Generate derives (only if there are any)
-    let derives = generate_derives_with_context(type_def, use_anchor);
+    let derives = generate_struct_derives_with_context(struct_def, use_anchor);
     if !derives.is_empty() {
         output.push_str(&format!("#[derive({})]\n", derives.join(", ")));
     }
 
     // Add Solana-specific attributes
-    if type_def.metadata.solana && type_def.metadata.attributes.contains(&"account".to_string()) {
+    if struct_def.metadata.solana && struct_def.metadata.attributes.contains(&"account".to_string()) {
         output.push_str("#[account]\n");
     }
 
     // Generate struct definition
-    output.push_str(&format!("pub struct {} {{\n", type_def.name));
+    output.push_str(&format!("pub struct {} {{\n", struct_def.name));
 
     // Generate fields
-    for field in &type_def.fields {
+    for field in &struct_def.fields {
         let rust_type = map_type_to_rust(&field.type_info);
         output.push_str(&format!("    pub {}: {},\n", field.name, rust_type));
     }
@@ -168,16 +195,16 @@ fn generate_struct_with_context(type_def: &TypeDefinition, use_anchor: bool) -> 
 }
 
 /// Generate derives with context about whether we're using Anchor
-fn generate_derives_with_context(type_def: &TypeDefinition, use_anchor: bool) -> Vec<String> {
+fn generate_struct_derives_with_context(struct_def: &StructDefinition, use_anchor: bool) -> Vec<String> {
     let mut derives = Vec::new();
 
     // If using #[account], no derives needed (Anchor provides them)
-    if type_def.metadata.solana && type_def.metadata.attributes.contains(&"account".to_string()) {
+    if struct_def.metadata.solana && struct_def.metadata.attributes.contains(&"account".to_string()) {
         return derives;
     }
 
     // If it's a Solana type but module uses Anchor, use Anchor derives
-    if type_def.metadata.solana && use_anchor {
+    if struct_def.metadata.solana && use_anchor {
         derives.push("AnchorSerialize".to_string());
         derives.push("AnchorDeserialize".to_string());
         derives.push("Debug".to_string());
@@ -186,7 +213,7 @@ fn generate_derives_with_context(type_def: &TypeDefinition, use_anchor: bool) ->
     }
 
     // Otherwise use Borsh derives
-    if type_def.metadata.solana {
+    if struct_def.metadata.solana {
         derives.push("BorshSerialize".to_string());
         derives.push("BorshDeserialize".to_string());
     }
@@ -197,14 +224,14 @@ fn generate_derives_with_context(type_def: &TypeDefinition, use_anchor: bool) ->
     derives
 }
 
-/// Collect required imports based on type definition
-fn collect_imports(type_def: &TypeDefinition) -> HashSet<String> {
+/// Collect required imports based on struct definition
+fn collect_struct_imports(struct_def: &StructDefinition) -> HashSet<String> {
     let mut imports = HashSet::new();
 
     // Check if we need Borsh or Anchor imports
-    if type_def.metadata.solana {
+    if struct_def.metadata.solana {
         // If using #[account], use Anchor imports (includes Borsh)
-        if type_def.metadata.attributes.contains(&"account".to_string()) {
+        if struct_def.metadata.attributes.contains(&"account".to_string()) {
             imports.insert("anchor_lang::prelude::*".to_string());
         } else {
             // Otherwise use Borsh directly
@@ -213,7 +240,7 @@ fn collect_imports(type_def: &TypeDefinition) -> HashSet<String> {
     }
 
     // Check field types for Solana-specific imports
-    for field in &type_def.fields {
+    for field in &struct_def.fields {
         collect_imports_from_type(&field.type_info, &mut imports);
     }
 
@@ -242,17 +269,17 @@ fn collect_imports_from_type(type_info: &TypeInfo, imports: &mut HashSet<String>
     }
 }
 
-/// Generate derive macros based on metadata
-fn generate_derives(type_def: &TypeDefinition) -> Vec<String> {
+/// Generate derive macros based on metadata (without context)
+fn generate_derives(struct_def: &StructDefinition) -> Vec<String> {
     let mut derives = Vec::new();
 
     // If using Anchor #[account], don't add any derives (Anchor provides them)
-    if type_def.metadata.solana && type_def.metadata.attributes.contains(&"account".to_string()) {
+    if struct_def.metadata.solana && struct_def.metadata.attributes.contains(&"account".to_string()) {
         return derives; // Empty - Anchor #[account] provides all derives
     }
 
     // Add Borsh derives for Solana types
-    if type_def.metadata.solana {
+    if struct_def.metadata.solana {
         derives.push("BorshSerialize".to_string());
         derives.push("BorshDeserialize".to_string());
     }
@@ -302,11 +329,11 @@ fn map_type_to_rust(type_info: &TypeInfo) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{FieldDefinition, Metadata, TypeDefinition, TypeInfo};
+    use crate::ir::{FieldDefinition, Metadata, StructDefinition, TypeDefinition, TypeInfo};
 
     #[test]
     fn generates_simple_struct() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "User".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -321,7 +348,7 @@ mod tests {
                 },
             ],
             metadata: Metadata::default(),
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("pub struct User"));
@@ -332,7 +359,7 @@ mod tests {
 
     #[test]
     fn generates_solana_account() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "UserAccount".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -350,7 +377,7 @@ mod tests {
                 solana: true,
                 attributes: vec!["account".to_string()],
             },
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("use anchor_lang::prelude::*"));
@@ -363,7 +390,7 @@ mod tests {
 
     #[test]
     fn generates_optional_fields() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Profile".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -375,7 +402,7 @@ mod tests {
                 },
             ],
             metadata: Metadata::default(),
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("pub email: Option<String>"));
@@ -383,7 +410,7 @@ mod tests {
 
     #[test]
     fn generates_array_fields() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Team".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -393,7 +420,7 @@ mod tests {
                 },
             ],
             metadata: Metadata::default(),
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("pub members: Vec<u64>"));
@@ -402,16 +429,16 @@ mod tests {
     #[test]
     fn generates_module_with_multiple_types() {
         let type_defs = vec![
-            TypeDefinition {
+            TypeDefinition::Struct(StructDefinition {
                 name: "User".to_string(),
                 fields: vec![],
                 metadata: Metadata::default(),
-            },
-            TypeDefinition {
+            }),
+            TypeDefinition::Struct(StructDefinition {
                 name: "Post".to_string(),
                 fields: vec![],
                 metadata: Metadata::default(),
-            },
+            }),
         ];
 
         let code = generate_module(&type_defs);
@@ -421,7 +448,7 @@ mod tests {
 
     #[test]
     fn maps_publickey_to_pubkey() {
-        let type_def = TypeDefinition {
+        let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Account".to_string(),
             fields: vec![
                 FieldDefinition {
@@ -434,7 +461,7 @@ mod tests {
                 solana: true,
                 attributes: vec![],
             },
-        };
+        });
 
         let code = generate(&type_def);
         assert!(code.contains("pub key: Pubkey"));
