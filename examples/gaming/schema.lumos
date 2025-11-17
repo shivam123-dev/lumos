@@ -1,11 +1,13 @@
 // On-Chain Gaming - Complete Schema
 // Demonstrates: Player state, items, leaderboards
 
-@solana
-@account
+#[solana]
+#[account]
 struct PlayerAccount {
-    wallet: PublicKey @key,
-    username: string @max(20),
+    #[key]
+    wallet: PublicKey,
+    #[max(20)]
+    username: String,
 
     // Stats
     level: u16,
@@ -31,14 +33,16 @@ struct PlayerAccount {
     total_playtime: i64,
 }
 
-@solana
-@account
+#[solana]
+#[account]
 struct GameItem {
-    id: u64 @key,
+    #[key]
+    id: u64,
     owner: PublicKey,
 
     // Item details
-    name: string @max(50),
+    #[max(50)]
+    name: String,
     item_type: u8,  // 0=weapon, 1=armor, 2=consumable, etc.
     rarity: u8,     // 0=common, 1=rare, 2=epic, 3=legendary
 
@@ -55,10 +59,11 @@ struct GameItem {
     acquired_at: i64,
 }
 
-@solana
-@account
+#[solana]
+#[account]
 struct Leaderboard {
-    season: u32 @key,
+    #[key]
+    season: u32,
 
     // Top players (stored as tuples conceptually)
     top_players: [PublicKey],
@@ -70,10 +75,10 @@ struct Leaderboard {
     is_active: bool,
 }
 
-@solana
+#[solana]
 struct MatchResult {
     player: PublicKey,
-    opponent?: PublicKey,
+    opponent: Option<PublicKey>,
 
     score: u64,
     rewards_earned: u64,

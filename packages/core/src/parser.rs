@@ -1,0 +1,302 @@
+// Licensed under either of Apache License, Version 2.0 or MIT license at your option.
+// Copyright 2025 RECTOR-LABS
+
+//! LUMOS Parser
+//!
+//! Parses `.lumos` files using `syn` and builds an AST.
+
+use crate::ast::{Attribute, AttributeValue, FieldDef, LumosFile, StructDef, TypeSpec};
+use crate::error::{LumosError, Result};
+use syn::{Item, Meta, Type};
+
+/// Parse a `.lumos` file into an AST
+pub fn parse_lumos_file(input: &str) -> Result<LumosFile> {
+    let mut structs = Vec::new();
+
+    // Parse the file as Rust code using syn
+    let file = syn::parse_file(input).map_err(|e| {
+        LumosError::SchemaParse(format!("Failed to parse .lumos file: {}", e))
+    })?;
+
+    // Extract struct definitions
+    for item in file.items {
+        if let Item::Struct(item_struct) = item {
+            let struct_def = parse_struct(item_struct)?;
+            structs.push(struct_def);
+        }
+    }
+
+    if structs.is_empty() {
+        return Err(LumosError::SchemaParse(
+            "No struct definitions found in .lumos file".to_string(),
+        ));
+    }
+
+    Ok(LumosFile { structs })
+}
+
+/// Parse a struct definition
+fn parse_struct(item: syn::ItemStruct) -> Result<StructDef> {
+    let name = item.ident.to_string();
+    let span = Some(item.ident.span());
+
+    // Extract attributes
+    let attributes = parse_attributes(&item.attrs)?;
+
+    // Extract fields
+    let fields = match item.fields {
+        syn::Fields::Named(fields_named) => {
+            let mut field_defs = Vec::new();
+            for field in fields_named.named {
+                let field_def = parse_field(field)?;
+                field_defs.push(field_def);
+            }
+            field_defs
+        }
+        _ => {
+            return Err(LumosError::SchemaParse(format!(
+                "Struct '{}' must have named fields",
+                name
+            )))
+        }
+    };
+
+    Ok(StructDef {
+        name,
+        attributes,
+        fields,
+        span,
+    })
+}
+
+/// Parse a field definition
+fn parse_field(field: syn::Field) -> Result<FieldDef> {
+    let name = field
+        .ident
+        .as_ref()
+        .ok_or_else(|| LumosError::SchemaParse("Field must have a name".to_string()))?
+        .to_string();
+
+    let span = field.ident.as_ref().map(|i| i.span());
+
+    // Extract field attributes
+    let attributes = parse_attributes(&field.attrs)?;
+
+    // Parse field type
+    let (type_spec, optional) = parse_type(&field.ty)?;
+
+    Ok(FieldDef {
+        name,
+        type_spec,
+        optional,
+        attributes,
+        span,
+    })
+}
+
+/// Parse attributes (e.g., #[solana], #[account], #[key], #[max(100)])
+fn parse_attributes(attrs: &[syn::Attribute]) -> Result<Vec<Attribute>> {
+    let mut attributes = Vec::new();
+
+    for attr in attrs {
+        // Parse meta (attribute content)
+        let meta = &attr.meta;
+
+        match meta {
+            // Simple path attribute: #[solana]
+            Meta::Path(path) => {
+                if let Some(ident) = path.get_ident() {
+                    attributes.push(Attribute {
+                        name: ident.to_string(),
+                        value: None,
+                        span: Some(ident.span()),
+                    });
+                }
+            }
+
+            // List attribute: #[max(100)]
+            Meta::List(meta_list) => {
+                let name = meta_list
+                    .path
+                    .get_ident()
+                    .ok_or_else(|| LumosError::SchemaParse("Invalid attribute".to_string()))?
+                    .to_string();
+
+                // Parse the value inside parentheses
+                let value = parse_attribute_value(&meta_list.tokens.to_string())?;
+
+                attributes.push(Attribute {
+                    name,
+                    value: Some(value),
+                    span: Some(meta_list.path.get_ident().unwrap().span()),
+                });
+            }
+
+            // Name-value attribute: #[key = "value"]
+            Meta::NameValue(_) => {
+                // Not commonly used in LUMOS, but we could support it
+            }
+        }
+    }
+
+    Ok(attributes)
+}
+
+/// Parse attribute value from token stream
+fn parse_attribute_value(tokens: &str) -> Result<AttributeValue> {
+    let tokens_trimmed = tokens.trim();
+
+    // Try parsing as integer
+    if let Ok(n) = tokens_trimmed.parse::<u64>() {
+        return Ok(AttributeValue::Integer(n));
+    }
+
+    // Try parsing as boolean
+    if tokens_trimmed == "true" {
+        return Ok(AttributeValue::Bool(true));
+    }
+    if tokens_trimmed == "false" {
+        return Ok(AttributeValue::Bool(false));
+    }
+
+    // Try parsing as string (remove quotes)
+    if tokens_trimmed.starts_with('"') && tokens_trimmed.ends_with('"') {
+        let s = tokens_trimmed[1..tokens_trimmed.len() - 1].to_string();
+        return Ok(AttributeValue::String(s));
+    }
+
+    // Default: treat as string
+    Ok(AttributeValue::String(tokens_trimmed.to_string()))
+}
+
+/// Parse a type specification
+fn parse_type(ty: &Type) -> Result<(TypeSpec, bool)> {
+    match ty {
+        // Simple type: u64, string, PublicKey
+        Type::Path(type_path) => {
+            let type_name = type_path
+                .path
+                .segments
+                .last()
+                .ok_or_else(|| LumosError::SchemaParse("Invalid type".to_string()))?
+                .ident
+                .to_string();
+
+            // Check if it's an Option<T> (optional type)
+            if type_name == "Option" {
+                // Extract the inner type from Option<T>
+                if let Some(segment) = type_path.path.segments.last() {
+                    if let syn::PathArguments::AngleBracketed(args) = &segment.arguments {
+                        if let Some(syn::GenericArgument::Type(inner_ty)) = args.args.first() {
+                            let (inner_type_spec, _) = parse_type(inner_ty)?;
+                            return Ok((inner_type_spec, true)); // optional = true
+                        }
+                    }
+                }
+            }
+
+            // Regular type
+            Ok((TypeSpec::Primitive(type_name), false))
+        }
+
+        // Array type: [T]
+        Type::Array(type_array) => {
+            let (inner_type_spec, _) = parse_type(&type_array.elem)?;
+            Ok((TypeSpec::Array(Box::new(inner_type_spec)), false))
+        }
+
+        // Slice type: [T] (also treated as array)
+        Type::Slice(type_slice) => {
+            let (inner_type_spec, _) = parse_type(&type_slice.elem)?;
+            Ok((TypeSpec::Array(Box::new(inner_type_spec)), false))
+        }
+
+        _ => Err(LumosError::SchemaParse(format!(
+            "Unsupported type: {:?}",
+            ty
+        ))),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_simple_struct() {
+        let input = r#"
+            struct User {
+                id: u64,
+                name: String,
+            }
+        "#;
+
+        let result = parse_lumos_file(input);
+        assert!(result.is_ok());
+
+        let file = result.unwrap();
+        assert_eq!(file.structs.len(), 1);
+        assert_eq!(file.structs[0].name, "User");
+        assert_eq!(file.structs[0].fields.len(), 2);
+        assert_eq!(file.structs[0].fields[0].name, "id");
+        assert_eq!(file.structs[0].fields[1].name, "name");
+    }
+
+    #[test]
+    fn test_parse_with_attributes() {
+        let input = r#"
+            #[solana]
+            #[account]
+            struct UserAccount {
+                #[key]
+                wallet: PublicKey,
+
+                #[max(32)]
+                username: String,
+            }
+        "#;
+
+        let result = parse_lumos_file(input);
+        assert!(result.is_ok());
+
+        let file = result.unwrap();
+        let struct_def = &file.structs[0];
+
+        assert!(struct_def.has_attribute("solana"));
+        assert!(struct_def.has_attribute("account"));
+        assert_eq!(struct_def.fields[0].name, "wallet");
+        assert!(struct_def.fields[0].has_attribute("key"));
+    }
+
+    #[test]
+    fn test_parse_optional_type() {
+        let input = r#"
+            struct User {
+                email: Option<String>,
+            }
+        "#;
+
+        let result = parse_lumos_file(input);
+        assert!(result.is_ok());
+
+        let file = result.unwrap();
+        let field = &file.structs[0].fields[0];
+        assert!(field.optional);
+    }
+
+    #[test]
+    fn test_parse_array_type() {
+        let input = r#"
+            struct Team {
+                members: [u64],
+            }
+        "#;
+
+        let result = parse_lumos_file(input);
+        assert!(result.is_ok());
+
+        let file = result.unwrap();
+        let field = &file.structs[0].fields[0];
+        assert!(field.type_spec.is_array());
+    }
+}

@@ -1,10 +1,11 @@
 // Token Vesting Contract - Complete Schema
 // Demonstrates: Time-based logic, cliff periods, linear vesting
 
-@solana
-@account
+#[solana]
+#[account]
 struct VestingSchedule {
-    beneficiary: PublicKey @key,
+    #[key]
+    beneficiary: PublicKey,
     token_mint: PublicKey,
     vault: PublicKey,
 
@@ -20,13 +21,14 @@ struct VestingSchedule {
     // Configuration
     is_revocable: bool,
     is_revoked: bool,
-    revoked_at?: i64,
+    revoked_at: Option<i64>,
 }
 
-@solana
-@account
+#[solana]
+#[account]
 struct VestingProgram {
-    authority: PublicKey @key,
+    #[key]
+    authority: PublicKey,
     token_mint: PublicKey,
 
     // Program stats
@@ -39,7 +41,7 @@ struct VestingProgram {
     max_beneficiaries: u32,
 }
 
-@solana
+#[solana]
 struct ReleaseEvent {
     beneficiary: PublicKey,
     schedule: PublicKey,

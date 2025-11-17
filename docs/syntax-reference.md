@@ -21,9 +21,9 @@
 ## Overview
 
 LUMOS uses a hybrid syntax combining:
-- **Rust-style** struct definitions (familiar to Solana developers)
+- **Rust-style** struct definitions and attributes (familiar to Solana developers)
 - **TypeScript-style** conveniences (optional types with `?`)
-- **Simple attributes** (`@tags`) for metadata
+- **Rust-style attributes** (`#[...]`) for metadata
 
 ### Philosophy
 
@@ -188,10 +188,10 @@ Attributes provide metadata and generation hints.
 
 ### Global Attributes
 
-#### `@solana` - Mark as Solana Program Type
+#### `#[solana]` - Mark as Solana Program Type
 
 ```lumos
-@solana
+#[solana]
 struct UserAccount {
     owner: PublicKey,
     balance: u64,
@@ -202,11 +202,11 @@ struct UserAccount {
 - Adds Solana-specific derives to Rust
 - Generates appropriate TypeScript imports
 
-#### `@account` - Mark as Anchor Account
+#### `#[account]` - Mark as Anchor Account
 
 ```lumos
-@solana
-@account
+#[solana]
+#[account]
 struct UserAccount {
     owner: PublicKey,
     balance: u64,
@@ -226,12 +226,13 @@ pub struct UserAccount {
 
 ### Field Attributes
 
-#### `@key` - Primary Key Field
+#### `#[key]` - Primary Key Field
 
 ```lumos
-@solana
+#[solana]
 struct UserAccount {
-    wallet: PublicKey @key,  // Inline attribute
+    #[key]
+    wallet: PublicKey,
     balance: u64,
 }
 ```
@@ -240,12 +241,14 @@ struct UserAccount {
 - Documents primary identifier
 - Used in PDA generation (future)
 
-#### `@max(n)` - Maximum Length
+#### `#[max(n)]` - Maximum Length
 
 ```lumos
 struct Post {
-    title: string @max(100),
-    body: string @max(5000),
+    #[max(100)]
+    title: string,
+    #[max(5000)]
+    body: string,
 }
 ```
 
@@ -268,7 +271,7 @@ LUMOS provides native Solana types:
 | `Keypair` | `Keypair` | N/A (server-side only) |
 
 ```lumos
-@solana
+#[solana]
 struct Transaction {
     from: PublicKey,
     to: PublicKey,
@@ -279,10 +282,10 @@ struct Transaction {
 
 ### Borsh Serialization
 
-All `@solana` types automatically get Borsh serialization:
+All `#[solana]` types automatically get Borsh serialization:
 
 ```lumos
-@solana
+#[solana]
 struct TokenAccount {
     mint: PublicKey,
     owner: PublicKey,
@@ -348,10 +351,12 @@ struct User {
 ### Example 1: Simple User Account
 
 ```lumos
-@solana
+#[solana]
 struct UserAccount {
-    wallet: PublicKey @key,
-    username: string @max(32),
+    #[key]
+    wallet: PublicKey,
+    #[max(32)]
+    username: string,
     created_at: i64,
     balance: u64,
 }
@@ -360,13 +365,17 @@ struct UserAccount {
 ### Example 2: NFT Metadata
 
 ```lumos
-@solana
-@account
+#[solana]
+#[account]
 struct NftMetadata {
-    mint: PublicKey @key,
-    name: string @max(32),
-    symbol: string @max(10),
-    uri: string @max(200),
+    #[key]
+    mint: PublicKey,
+    #[max(32)]
+    name: string,
+    #[max(10)]
+    symbol: string,
+    #[max(200)]
+    uri: string,
     seller_fee_basis_points: u16,
     creators: [PublicKey],
 }
@@ -375,7 +384,7 @@ struct NftMetadata {
 ### Example 3: DEX Order
 
 ```lumos
-@solana
+#[solana]
 struct Order {
     trader: PublicKey,
     market: PublicKey,
@@ -390,8 +399,8 @@ struct Order {
 ### Example 4: Escrow Account
 
 ```lumos
-@solana
-@account
+#[solana]
+#[account]
 struct EscrowAccount {
     initializer: PublicKey,
     initializer_token_account: PublicKey,
@@ -407,10 +416,11 @@ struct EscrowAccount {
 ### Example 5: Staking Pool
 
 ```lumos
-@solana
-@account
+#[solana]
+#[account]
 struct StakingPool {
-    authority: PublicKey @key,
+    #[key]
+    authority: PublicKey,
     token_mint: PublicKey,
 
     total_staked: u64,
@@ -420,9 +430,10 @@ struct StakingPool {
     stakers: [PublicKey],
 }
 
-@solana
+#[solana]
 struct StakerInfo {
-    owner: PublicKey @key,
+    #[key]
+    owner: PublicKey,
     amount_staked: u64,
     reward_debt: u64,
     last_claim_time: i64,
@@ -454,7 +465,7 @@ struct StakerInfo {
 
 1. **Field names:** Must be valid Rust identifiers (snake_case recommended)
 2. **Struct names:** Must be valid Rust identifiers (PascalCase recommended)
-3. **String lengths:** Should specify `@max(n)` for Solana accounts
+3. **String lengths:** Should specify `#[max(n)]` for Solana accounts
 4. **Public keys:** Use `PublicKey` type, not raw bytes
 5. **Timestamps:** Use `i64` (Unix timestamp)
 
@@ -480,11 +491,11 @@ Error: Invalid type 'uint64'
 
 Planned for Phase 2+:
 
-- **Constraints:** `@min(n)`, `@range(min, max)`
-- **Validation:** `@validate(regex)`
-- **PDA Macros:** `@pda(seeds = [...])`
-- **Instructions:** `@instruction` for Anchor methods
-- **Events:** `@event` for program logs
+- **Constraints:** `#[min(n)]`, `#[range(min, max)]`
+- **Validation:** `#[validate(regex)]`
+- **PDA Macros:** `#[pda(seeds = [...])]`
+- **Instructions:** `#[instruction]` for Anchor methods
+- **Events:** `#[event]` for program logs
 - **Comments:** `//` single-line, `/* */` multi-line
 
 ---

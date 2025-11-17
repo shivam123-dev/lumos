@@ -6,15 +6,24 @@
 //! Core schema parsing and code generation for LUMOS.
 //!
 //! This crate provides the fundamental building blocks for LUMOS:
-//! - Schema parsing (TOML → Intermediate Representation)
+//! - Schema parsing (.lumos → Abstract Syntax Tree → Intermediate Representation)
 //! - Code generation (IR → Rust/TypeScript)
 //! - Type system and validation
 
-/// Schema parsing and validation
+/// Abstract Syntax Tree (AST) for .lumos files
+pub mod ast;
+
+/// Parser for .lumos files (builds AST from source code)
+pub mod parser;
+
+/// Schema parsing and validation (TOML format - legacy)
 pub mod schema;
 
 /// Intermediate representation (IR) for type definitions
 pub mod ir;
+
+/// Transform AST into IR
+pub mod transform;
 
 /// Rust code generator
 pub mod generators {

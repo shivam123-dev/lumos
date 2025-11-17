@@ -1,10 +1,11 @@
 // NFT Marketplace - Complete Schema
 // Demonstrates: Solana types, accounts, optional fields, arrays
 
-@solana
-@account
+#[solana]
+#[account]
 struct Marketplace {
-    authority: PublicKey @key,
+    #[key]
+    authority: PublicKey,
     fee_recipient: PublicKey,
     fee_basis_points: u16,
     total_volume: u64,
@@ -12,29 +13,34 @@ struct Marketplace {
     is_active: bool,
 }
 
-@solana
-@account
+#[solana]
+#[account]
 struct NftListing {
     seller: PublicKey,
-    nft_mint: PublicKey @key,
+    #[key]
+    nft_mint: PublicKey,
     price: u64,
     created_at: i64,
-    expires_at?: i64,
+    expires_at: Option<i64>,
 }
 
-@solana
-@account
+#[solana]
+#[account]
 struct NftMetadata {
-    mint: PublicKey @key,
-    name: string @max(32),
-    symbol: string @max(10),
-    uri: string @max(200),
+    #[key]
+    mint: PublicKey,
+    #[max(32)]
+    name: String,
+    #[max(10)]
+    symbol: String,
+    #[max(200)]
+    uri: String,
     seller_fee_basis_points: u16,
     creators: [PublicKey],
     is_mutable: bool,
 }
 
-@solana
+#[solana]
 struct PurchaseReceipt {
     buyer: PublicKey,
     seller: PublicKey,

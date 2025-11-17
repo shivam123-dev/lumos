@@ -1,10 +1,11 @@
 // DeFi Staking Pool - Complete Schema
 // Demonstrates: Complex calculations, timestamps, rewards tracking
 
-@solana
-@account
+#[solana]
+#[account]
 struct StakingPool {
-    authority: PublicKey @key,
+    #[key]
+    authority: PublicKey,
     token_mint: PublicKey,
     vault: PublicKey,
 
@@ -19,19 +20,20 @@ struct StakingPool {
 
     // Timing
     start_time: i64,
-    end_time?: i64,
+    end_time: Option<i64>,
     last_update_time: i64,
 
     // State
     is_active: bool,
     min_stake_amount: u64,
-    max_stake_amount?: u64,
+    max_stake_amount: Option<u64>,
 }
 
-@solana
-@account
+#[solana]
+#[account]
 struct StakerAccount {
-    owner: PublicKey @key,
+    #[key]
+    owner: PublicKey,
     pool: PublicKey,
 
     // Staking data
@@ -44,10 +46,10 @@ struct StakerAccount {
     total_claimed: u64,
 
     // Lock period
-    unlock_timestamp?: i64,
+    unlock_timestamp: Option<i64>,
 }
 
-@solana
+#[solana]
 struct StakeEvent {
     staker: PublicKey,
     pool: PublicKey,
