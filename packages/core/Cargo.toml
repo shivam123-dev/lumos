@@ -19,4 +19,4 @@ anyhow.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
-# Add test dependencies here
+tempfile = "3.8"
