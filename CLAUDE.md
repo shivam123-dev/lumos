@@ -1,416 +1,128 @@
-# CLAUDE.md - LUMOS Project Context
+# CLAUDE.md - LUMOS Core
 
-**Project:** LUMOS - Type-Safe Schema Language for Solana
-**Owner:** RECTOR (rz1989s)
 **Repository:** https://github.com/getlumos/lumos
-**Purpose:** AI assistant context and project knowledge base
+**Website:** https://lumos-lang.com
+**Purpose:** Type-safe schema language bridging TypeScript ↔ Rust for Solana development
 
 ---
 
-## Project Overview
+## What is LUMOS?
 
-LUMOS is a **domain-specific language (DSL)** and **code generator** that enables type-safe, cross-language development for Solana blockchain applications. It bridges TypeScript (client-side) and Rust (on-chain programs) with guaranteed type safety and Borsh serialization compatibility.
+Write data structures once in `.lumos` syntax → Generate production-ready Rust + TypeScript with guaranteed Borsh serialization compatibility.
 
-### The Problem LUMOS Solves
-
-When building Solana applications:
-- **Manual duplication:** Developers write account structures twice (Rust for programs, TypeScript for clients)
-- **Type drift:** Changes in Rust don't automatically reflect in TypeScript
-- **Serialization errors:** Borsh schema mismatches cause runtime failures
-- **Boilerplate:** Repetitive code for derives, imports, and serialization
-
-### LUMOS Solution
-
-Write schemas **once** in `.lumos` format, generate production-ready code for **both** languages:
-
-```lumos
-#[solana]
-#[account]
-struct UserAccount {
-    wallet: PublicKey,
-    balance: u64,
-}
-```
-
-**Generates:**
-- ✅ Rust with proper Anchor/Borsh integration
-- ✅ TypeScript interfaces with Borsh schemas
-- ✅ Guaranteed serialization compatibility
-
----
-
-## Project Status
-
-### Phase 1: Core Parser & Generators ✅ COMPLETED (2025-01-17)
-
-**All 50 tests passing (100% success rate)**
-
-- ✅ Parser: syn-based .lumos parser
-- ✅ Rust Generator: Context-aware Anchor/Borsh code generation
-- ✅ TypeScript Generator: Interface + Borsh schema generation
-- ✅ E2E Testing: Actual compilation verification
-
-### Phase 2: CLI & Developer Tools ✅ COMPLETED (2025-01-17)
-
-**All 50 tests passing after CLI implementation**
-
-- ✅ `lumos generate` - Generate Rust/TypeScript from schemas
-- ✅ `lumos validate` - Validate .lumos schema syntax
-- ✅ `lumos init` - Initialize new LUMOS project
-- ✅ `lumos check` - Health check and diagnostics
-- ✅ File I/O with proper error handling
-- ✅ Colorized terminal output (colored crate)
-
-### Phase 3.1: Enum Support ✅ COMPLETE (2025-11-17)
-
-**64 tests passing (100% success rate) after Week 3**
-
-**Week 1: AST & Parser ✅ COMPLETE**
-- ✅ Enum syntax design (`examples/enums/schema.lumos` with 8 patterns)
-- ✅ Complete design documentation (`docs/enum-design.md` 500+ lines)
-- ✅ AST support for 3 enum variant types (Unit, Tuple, Struct)
-- ✅ Parser implementation with full enum parsing
-- ✅ 5 new parser tests for enum functionality
-
-**Week 2: IR & Transform ✅ COMPLETE**
-- ✅ Refactored IR to enum-based TypeDefinition (Struct|Enum)
-- ✅ EnumDefinition and EnumVariantDefinition types
-- ✅ Complete AST→IR transform for all variant types
-- ✅ 3 new transform tests (unit/tuple/struct enums)
-- ✅ Updated all generators for new IR structure
-- ✅ All 57 tests passing
-
-**Week 3: Code Generation ✅ COMPLETE**
-- ✅ Rust enum generator implementation (all 3 variant types)
-- ✅ TypeScript discriminated union generator with `kind` field
-- ✅ Context-aware derives (Anchor vs Borsh detection)
-- ✅ Borsh schema generation for enums (`borsh.rustEnum`)
-- ✅ 6 new unit tests (3 Rust + 3 TypeScript)
-- ✅ E2E test with enum compilation verification
-- ✅ All 64 tests passing
-
-**Week 4: Documentation & Polish ✅ COMPLETE**
-- ✅ Update CLAUDE.md with Phase 3.1 completion
-- ✅ Update execution-plan.md with detailed enum implementation
-- ✅ Real-world Solana instruction pattern testing (via E2E tests)
-- ✅ Performance optimization (test suite runs efficiently)
-
-### Phase 3.2: VSCode Extension ✅ COMPLETE (2025-11-18)
-
-**Full-featured extension with professional branding**
-
-- ✅ **TextMate Grammar**: Complete syntax highlighting for .lumos files
-  - Keywords, types, attributes, comments, numbers
-  - Solana-specific types (PublicKey, Signature, etc.)
-  - Enum syntax support (unit, tuple, struct variants)
-- ✅ **Language Configuration**: Auto-closing, bracket matching, comment toggling
-- ✅ **Code Snippets**: 13 snippets for common patterns
-  - `solstruct`, `solaccount`, `enumu`, `enumt`, `enums`
-  - Field shortcuts: `fpubkey`, `fu64`, `fstring`, `farray`, `foption`
-- ✅ **Commands**: Generate code, validate schema
-- ✅ **Auto-generate on Save**: Optional feature for live code generation
-- ✅ **Professional Icon & Branding**: Radiant Precision design philosophy
-  - 128×128 extension icon with Solana-inspired color palette
-  - High-res variants (512×512, 64×64, 32×32)
-  - Complete branding documentation
-- ✅ **Documentation**: README, CHANGELOG, LICENSE (dual MIT/Apache-2.0)
-- ✅ **Packaged**: Ready for installation as .vsix (17.77 KB)
-
-**Location**: `vscode-lumos/` directory with complete extension structure
-
-### Phase 3.3: Production Polish ✅ COMPLETE (2025-11-18)
-
-**Premium quality preparation for publishing - 13/13 tasks complete**
-
-**Tier 1: Code Quality ✅**
-- ✅ Remove dead code (2 unused functions eliminated)
-- ✅ Run cargo clippy (20 warnings fixed → 0 warnings)
-- ✅ Run cargo fmt (entire codebase formatted)
-
-**Tier 2: Infrastructure ✅**
-- ✅ GitHub Actions CI pipeline (ci.yml)
-  - Multi-OS testing (Ubuntu, macOS, Windows)
-  - Clippy linting with strict mode (-D warnings)
-  - Code coverage with tarpaulin + Codecov
-  - VSCode extension build verification
-- ✅ GitHub Actions release pipeline (release.yml)
-  - 6-platform binary builds (Linux x86_64/musl, macOS x86_64/ARM64, Windows)
-  - Automated crates.io publishing (lumos-core → lumos-cli)
-  - VS Marketplace publishing
-  - GitHub release with binary assets
-- ✅ Update README.md (badges, roadmap, Phase 3.1/3.2 sections)
-- ✅ Package metadata (keywords, categories, readme in Cargo.toml)
-- ✅ Security audit (cargo audit: 0 vulnerabilities in 104 dependencies)
-- ✅ Examples documentation (examples/README.md: 250+ lines)
-
-**Tier 3: Documentation & Performance ✅**
-- ✅ Comprehensive API documentation
-  - lib.rs: Crate-level overview with usage example
-  - parser.rs: Detailed function docs with examples
-  - transform.rs: AST → IR transformation documentation
-  - generators/rust.rs: Context-aware generation explained
-  - generators/typescript.rs: Discriminated union pattern docs
-- ✅ Generate cargo doc (0 rustdoc warnings, 9 doc tests passing)
-- ✅ Performance benchmarks (15 comprehensive benchmarks)
-  - Parser benchmarks (small/medium/large schemas)
-  - Transform benchmarks (3 sizes)
-  - Rust generator benchmarks (3 sizes)
-  - TypeScript generator benchmarks (3 sizes)
-  - End-to-end pipeline benchmarks (3 sizes)
-  - benches/README.md: Complete benchmark usage guide
-  - Result: Parser ~4.9µs for small schema
-
-**Final Metrics:**
-- **Tests**: 64/64 passing (100% success rate)
-- **Doc Tests**: 9/9 passing (2 ignored intentionally)
-- **Warnings**: 0 compiler + 0 clippy
-- **Security**: 0 vulnerabilities
-- **Documentation**: Complete with 0 rustdoc warnings
-- **Performance**: Benchmarked and optimized
-
-### Phase 3.4: Advanced Features 📋 FUTURE
-
-- Validation constraints (#[min(n)], #[max(n)], regex patterns)
-- Migration tooling (schema versioning and migration scripts)
-- Package publishing (crates.io for CLI, npm for TypeScript, VS Marketplace for extension)
-- Language Server Protocol (LSP) for advanced IntelliSense
+**Status:** Phase 3.3 Complete (Production Ready) | 64/64 tests passing | 0 warnings | 0 vulnerabilities
 
 ---
 
 ## Architecture
 
-### Pipeline
-
 ```
-.lumos file
-    ↓
-Parser (syn-based)
-    ↓
-AST (Abstract Syntax Tree)
-    ↓
-Transformer
-    ↓
-IR (Intermediate Representation)
-    ↓
-    ├─→ Rust Generator → .rs files
-    └─→ TypeScript Generator → .ts files
+.lumos → Parser (syn) → AST → Transform → IR → Generators → .rs + .ts
 ```
 
-### Key Design Decisions
-
-#### 1. Rust-Style Syntax
-- Uses `#[attribute]` syntax familiar to Solana developers
-- Natural for target audience (primarily Rust developers)
-- Leverages `syn` crate for parsing
-
-#### 2. Context-Aware Generation
-- **Smart Import Management:** Detects Anchor usage, uses appropriate imports
-- **Intelligent Derives:** No manual derives for `#[account]`, context-aware for mixed modules
-- **Prevents Conflicts:** Avoids Borsh import ambiguity in Anchor projects
-
-#### 3. IR-Based Design
-- Language-agnostic intermediate representation
-- Easy to add new target languages (C++, Python, etc.)
-- Separation of concerns: parsing ≠ generation
+**Key Files:**
+- `packages/core/src/parser.rs` - Parse .lumos syntax to AST
+- `packages/core/src/transform.rs` - AST → IR conversion
+- `packages/core/src/generators/rust.rs` - Rust code generation (context-aware)
+- `packages/core/src/generators/typescript.rs` - TypeScript + Borsh schemas
+- `packages/cli/src/main.rs` - CLI commands (generate, validate, init, check)
 
 ---
 
-## Codebase Structure
+## Current Features
 
-```
-lumos/
-├── packages/
-│   ├── core/                    # Core parser & generators (Rust)
-│   │   ├── src/
-│   │   │   ├── lib.rs           # Public API
-│   │   │   ├── parser.rs        # .lumos → AST parser (enum support ✅)
-│   │   │   ├── ast.rs           # AST definitions (Item enum: Struct|Enum ✅)
-│   │   │   ├── transform.rs     # AST → IR transformer (enum transform ✅)
-│   │   │   ├── ir.rs            # IR (TypeDefinition enum ✅)
-│   │   │   ├── schema.rs        # Legacy schema parser
-│   │   │   ├── error.rs         # Error types
-│   │   │   └── generators/
-│   │   │       ├── rust.rs      # Rust generator (struct + enum ✅)
-│   │   │       └── typescript.rs # TS generator (interface + enum ✅)
-│   │   └── tests/
-│   │       ├── integration_test.rs        # Parser integration (5 tests)
-│   │       ├── test_rust_generator.rs     # Rust gen tests (5 tests)
-│   │       ├── test_typescript_generator.rs # TS gen tests (6 tests)
-│   │       └── test_e2e.rs                # E2E compilation (8 tests)
-│   └── cli/                     # CLI implementation (Phase 2 ✅)
-│       ├── src/
-│       │   ├── main.rs          # CLI entry point
-│       │   └── commands/        # Command implementations
-│       │       ├── generate.rs  # Code generation
-│       │       ├── validate.rs  # Schema validation
-│       │       ├── init.rs      # Project initialization
-│       │       └── check.rs     # Health check
-│       └── tests/               # CLI integration tests
-├── vscode-lumos/                # VSCode Extension (Phase 3.2 ✅)
-│   ├── src/
-│   │   └── extension.ts         # Extension activation & commands
-│   ├── syntaxes/
-│   │   └── lumos.tmLanguage.json # TextMate grammar
-│   ├── snippets/
-│   │   └── lumos.json           # Code snippets (13 snippets)
-│   ├── out/
-│   │   └── extension.js         # Compiled extension
-│   ├── icon.png                 # Extension icon (128×128)
-│   ├── icon-512.png             # High-res branding (512×512)
-│   ├── icon-64.png              # Medium icon (64×64)
-│   ├── icon-32.png              # Small icon (32×32)
-│   ├── package.json             # Extension manifest
-│   ├── language-configuration.json # Language features config
-│   ├── create_icon.py           # Icon generation script
-│   ├── design-philosophy.md     # Radiant Precision philosophy
-│   ├── BRANDING.md              # Branding guidelines
-│   ├── README.md                # Extension documentation
-│   ├── CHANGELOG.md             # Version history
-│   ├── LICENSE                  # Dual MIT/Apache-2.0
-│   └── lumos-0.1.0.vsix         # Packaged extension (17.77 KB)
-├── examples/
-│   ├── gaming/schema.lumos              # Gaming example
-│   ├── nft-marketplace/schema.lumos     # NFT marketplace
-│   ├── defi-staking/schema.lumos        # DeFi staking
-│   ├── dao-governance/schema.lumos      # DAO governance
-│   ├── token-vesting/schema.lumos       # Token vesting
-│   └── enums/schema.lumos               # ✅ 8 enum patterns (200+ lines)
-├── docs/
-│   ├── execution-plan.md        # Development roadmap
-│   └── enum-design.md           # ✅ Enum support design (500+ lines)
-└── CLAUDE.md                    # This file (updated 2025-11-18)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Struct support | ✅ | Full support with #[account] |
+| Enum support | ✅ | Unit, Tuple, Struct variants |
+| Primitive types | ✅ | u8-u128, i8-i128, bool, String |
+| Solana types | ✅ | PublicKey, Signature |
+| Complex types | ✅ | Vec, Option |
+| Context-aware generation | ✅ | Anchor vs pure Borsh detection |
+| CLI tool | ✅ | 4 commands (generate, validate, init, check) |
+| VSCode extension | ✅ | Separate repo: getlumos/vscode-lumos |
+
+---
+
+## Development Commands
+
+```bash
+# Run tests (64 tests, ~150s with E2E)
+cargo test --all-features --workspace
+
+# Check formatting
+cargo fmt --all -- --check
+
+# Lint (strict mode)
+cargo clippy --all-targets --all-features -- -D warnings
+
+# Build release
+cargo build --release --all-features --workspace
+
+# Generate from schema
+cargo run --bin lumos -- generate examples/gaming/schema.lumos
 ```
 
 ---
 
-## Test Suite
+## Test Suite (64 tests)
 
-**Total:** 64/64 passing (100%)
+| Suite | Count | Location |
+|-------|-------|----------|
+| Unit tests | 39 | `packages/core/src/**/*.rs` |
+| Parser integration | 5 | `packages/core/tests/integration_test.rs` |
+| Rust generator | 8 | `packages/core/tests/test_rust_generator.rs` |
+| TypeScript generator | 9 | `packages/core/tests/test_typescript_generator.rs` |
+| E2E compilation | 9 | `packages/core/tests/test_e2e.rs` |
 
-| Suite | Count | Purpose |
-|-------|-------|---------|
-| Unit Tests | 39 | Core functionality (parser, generators, transform, AST) |
-| Parser Integration | 5 | Real-world schema parsing |
-| Rust Generator Integration | 8 | Rust code generation (structs + enums) |
-| TypeScript Generator Integration | 9 | TypeScript code generation (structs + enums) |
-| E2E Compilation | 9 | Actual Rust compilation with cargo check |
-
-**New Tests (Phase 3.1 Weeks 1-3):**
-- **Week 1:** 5 AST enum tests (unit/tuple/struct variants)
-- **Week 2:** 3 Transform enum tests (full AST→IR pipeline)
-- **Week 3:** 7 code generation tests (3 Rust + 3 TypeScript + 1 E2E enum)
-
-**Run tests:** `cd packages/core && cargo test`
+**E2E tests compile generated Rust code with `cargo check` (takes ~60s per test).**
 
 ---
 
-## Key Technical Achievements
+## Critical Design Decisions
 
 ### 1. Context-Aware Rust Generation
+- **With #[account]:** Use `anchor_lang::prelude::*`, no manual derives
+- **Without #[account]:** Use `borsh::{BorshSerialize, BorshDeserialize}`
+- **Mixed modules:** Use Anchor imports for entire module if ANY struct has #[account]
 
-**Challenge:** Modules with mixed `#[account]` and non-`#[account]` structs caused import conflicts.
+### 2. Enum Support (Phase 3.1)
+- **Rust:** Native `enum` with sequential discriminants (0, 1, 2...)
+- **TypeScript:** Discriminated unions with `kind` field for type narrowing
+- **Borsh:** `borsh.rustEnum()` with matching discriminants
 
-**Solution:**
-- If **any** struct uses `#[account]` → use `anchor_lang::prelude::*` for entire module
-- Non-account structs in Anchor modules use `AnchorSerialize/AnchorDeserialize`
-- Pure Borsh modules use `borsh::{BorshSerialize, BorshDeserialize}`
-
-### 2. Smart Derive Generation
-
-**Insight:** Anchor's `#[account]` macro provides derives automatically.
-
-**Implementation:**
-- `#[account]` structs: NO manual derives
-- Non-account in Anchor modules: `AnchorSerialize/AnchorDeserialize, Debug, Clone`
-- Pure Borsh structs: `BorshSerialize/BorshDeserialize, Debug, Clone`
-
-### 3. Type Mapping Excellence
-
-Complete bidirectional type mapping:
-
-| LUMOS | Rust | TypeScript | Borsh (Rust) | Borsh (TS) |
-|-------|------|------------|--------------|------------|
-| `u64` | `u64` | `number` | - | `borsh.u64` |
-| `u128` | `u128` | `bigint` | - | `borsh.u128` |
-| `Pubkey` | `Pubkey` | `PublicKey` | - | `borsh.publicKey` |
-| `Signature` | `String` | `string` | - | `borsh.string` |
-| `[T]` | `Vec<T>` | `T[]` | - | `borsh.vec(...)` |
-| `Option<T>` | `Option<T>` | `T \| undefined` | - | `borsh.option(...)` |
-
-### 4. Enum Support Architecture (Phase 3.1 Weeks 1-2)
-
-**Challenge:** Support 3 different enum variant types with proper Rust/TypeScript mapping.
-
-**Solution:**
-- **AST Layer:** `Item` enum wrapping both `StructDef` and `EnumDef`
-- **Parser:** Handles all 3 variant types:
-  - Unit variants: `Active`, `Paused` (state machines)
-  - Tuple variants: `PlayerJoined(PublicKey, u64)` (data-carrying)
-  - Struct variants: `Initialize { authority: PublicKey }` (Solana instructions)
-- **IR Layer:** Refactored to enum-based `TypeDefinition`:
-  ```rust
-  pub enum TypeDefinition {
-      Struct(StructDefinition),
-      Enum(EnumDefinition),
-  }
-
-  pub enum EnumVariantDefinition {
-      Unit { name: String },
-      Tuple { name: String, types: Vec<TypeInfo> },
-      Struct { name: String, fields: Vec<FieldDefinition> },
-  }
-  ```
-- **Transform:** Complete AST→IR pipeline for all variant types
-- **Type Mapping Strategy:**
-  - Rust: Native `enum` with derives
-  - TypeScript: Discriminated unions with `kind` field for type narrowing
-  - Borsh: Sequential discriminants (0, 1, 2...) matching Borsh defaults
-
-**Status:** AST ✅ | Parser ✅ | IR ✅ | Transform ✅ | Code Generation ⏳
+### 3. Type Mapping
+```
+LUMOS      → Rust        → TypeScript
+u64        → u64         → number
+u128       → u128        → bigint
+PublicKey  → Pubkey      → PublicKey
+[T]        → Vec<T>      → T[]
+Option<T>  → Option<T>   → T | undefined
+```
 
 ---
 
-## Development Workflow
+## AI Assistant Guidelines
 
-### Running Tests
+### ✅ DO:
+- Run `cargo test` after any code changes
+- Use `cargo fmt` before committing
+- Check E2E tests pass (actual Rust compilation)
+- Update this file when architecture changes
+- Reference file:line when discussing code (e.g., `parser.rs:123`)
 
-```bash
-cd packages/core
-cargo test                 # Run all tests
-cargo test --lib           # Unit tests only
-cargo test --test test_e2e # E2E tests only
-```
-
-### Building
-
-```bash
-cd packages/core
-cargo build                # Debug build
-cargo build --release      # Release build
-```
-
-### Adding New Features
-
-1. **Parser Changes:**
-   - Modify `src/parser.rs` and `src/ast.rs`
-   - Update `src/transform.rs` to handle new AST nodes
-   - Add tests to `tests/integration_test.rs`
-
-2. **Generator Changes:**
-   - Modify `src/generators/rust.rs` or `typescript.rs`
-   - Add unit tests in the same file (`#[cfg(test)] mod tests`)
-   - Add integration tests in `tests/test_*_generator.rs`
-
-3. **E2E Validation:**
-   - Add test to `tests/test_e2e.rs`
-   - Ensure generated code actually compiles
+### ❌ DON'T:
+- Add manual derives to `#[account]` structs (causes conflicts)
+- Change IR structure without updating all generators
+- Skip E2E tests (they catch real compilation issues)
+- Use `echo` or bash for communication (output directly)
+- Create .md files without surveying existing structure first
 
 ---
 
-## Example Schemas
+## Example Schema
 
-### 1. Gaming (`examples/gaming/schema.lumos`)
-**Features:** Mixed structs (3 `#[account]` + 1 non-account)
 ```lumos
 #[solana]
 #[account]
@@ -418,293 +130,44 @@ struct PlayerAccount {
     wallet: PublicKey,
     level: u16,
     experience: u64,
-    equipped_items: [PublicKey],
 }
 
-#[solana]
-struct MatchResult {
-    player: PublicKey,
-    opponent: Option<PublicKey>,
-    score: u64,
-}
-```
-
-### 2. NFT Marketplace (`examples/nft-marketplace/schema.lumos`)
-**Features:** Signature type, optional fields
-```lumos
-#[solana]
-struct PurchaseReceipt {
-    buyer: PublicKey,
-    nft_mint: PublicKey,
-    price: u64,
-    transaction_signature: Signature,  // Maps to String
-}
-```
-
-### 3. Enum Patterns (`examples/enums/schema.lumos`)
-**Features:** Comprehensive enum variant showcase (200+ lines, 8 patterns)
-
-```lumos
-// Unit enum (state machines)
 #[solana]
 enum GameState {
     Active,
     Paused,
     Finished,
-    Cancelled,
-}
-
-// Tuple enum (data-carrying variants)
-#[solana]
-enum GameEvent {
-    PlayerJoined(PublicKey),
-    ScoreUpdated(PublicKey, u64),
-}
-
-// Struct enum (Solana instruction pattern)
-#[solana]
-enum GameInstruction {
-    Initialize {
-        authority: PublicKey,
-        max_players: u32,
-    },
-    UpdateScore {
-        player: PublicKey,
-        new_score: u64,
-    },
-}
-
-// Enums in structs
-#[solana]
-#[account]
-struct GameAccount {
-    authority: PublicKey,
-    state: GameState,  // Enum as field
-    current_round: u32,
 }
 ```
 
-**See:** `docs/enum-design.md` for complete design specification (500+ lines)
+**Generates:**
+- `generated.rs` - Rust structs with Anchor integration
+- `generated.ts` - TypeScript interfaces + Borsh schemas
 
 ---
 
-## Common Issues & Solutions
+## Publishing Checklist
 
-### Issue: Import Conflicts in Mixed Modules
-**Symptom:** `error[E0659]: borsh is ambiguous`
-**Solution:** Context-aware generation automatically handles this
-
-### Issue: Derive Conflicts with #[account]
-**Symptom:** `error[E0119]: conflicting implementations`
-**Solution:** No derives for `#[account]` structs
-
-### Issue: Signature Type Import Error
-**Symptom:** `could not find signature in solana_program`
-**Solution:** Map `Signature` → `String` (base58 representation)
-
----
-
-## Dependencies
-
-### Core (`packages/core/Cargo.toml`)
-```toml
-[dependencies]
-syn = "2.0"           # Rust parser
-quote = "1.0"         # Code generation
-proc-macro2 = "1.0"   # Token manipulation
-serde = "1.0"         # Serialization
-serde_json = "1.0"    # JSON support
-toml = "0.8"          # Config files
-anyhow = "1.0"        # Error handling
-thiserror = "1.0"     # Error macros
-
-[dev-dependencies]
-tempfile = "3.8"      # E2E test infrastructure
-```
+- [x] All tests passing (64/64)
+- [x] Zero clippy warnings
+- [x] Zero rustfmt violations
+- [x] Security audit clean (0 vulnerabilities)
+- [x] API documentation complete
+- [x] Benchmarks added
+- [x] CI/CD pipeline working
+- [x] Organization migrated (getlumos)
+- [x] Homepage updated (lumos-lang.com)
+- [ ] Published to crates.io
+- [ ] VSCode extension published
 
 ---
 
-## Conventions & Standards
+## Related Repositories
 
-### Code Style
-- **Rust:** Follow `rustfmt` defaults, 2-space indentation
-- **Generated code:** Auto-formatted, idiomatic for target language
-- **Comments:** Only for complex logic, avoid obvious explanations
-
-### Naming
-- **Functions:** `snake_case` (Rust convention)
-- **Structs/Types:** `PascalCase` (both Rust and TypeScript)
-- **Files:** `snake_case.rs`, `kebab-case.ts`
-
-### Testing
-- **Unit tests:** In same file as implementation (`#[cfg(test)] mod tests`)
-- **Integration tests:** In `tests/` directory
-- **E2E tests:** Must verify actual compilation, not just generation
-
-### Git Workflow
-- **Branch:** `dev` for development, `main` for releases
-- **Commits:** Descriptive messages following conventional commits style
-- **No pushing to main directly** - merge via PRs
+- **vscode-lumos** - VSCode extension (syntax highlighting, snippets, commands)
+- **awesome-lumos** - Community examples and full-stack applications
 
 ---
 
-## AI Assistant Guidelines
-
-### When Working on LUMOS:
-
-1. **Always run tests after changes:**
-   ```bash
-   cd packages/core && cargo test
-   ```
-
-2. **Check generated code compiles (E2E tests):**
-   ```bash
-   cargo test --test test_e2e
-   ```
-
-3. **Update this file** when:
-   - Architecture changes
-   - New features added
-   - Test structure changes
-   - New conventions established
-
-4. **Update `docs/execution-plan.md`** when:
-   - Phase milestones completed
-   - New phases planned
-   - Major technical decisions made
-
-5. **Commit message format:**
-   ```
-   feat: Add enum support to parser
-   fix: Resolve derive conflict in mixed modules
-   test: Add E2E test for DAO governance
-   docs: Update CLAUDE.md with new architecture
-   ```
-
-### What AI Should Know:
-
-- **Context-aware generation is critical** - don't suggest reverting to simple Borsh imports
-- **Always consider Anchor compatibility** - Solana developers use Anchor heavily
-- **E2E tests must compile** - generation alone isn't enough
-- **Type safety is paramount** - Rust ↔ TypeScript types must match exactly
-
----
-
-## Future Considerations
-
-### Phase 3.4+ (FUTURE):
-- **Custom derives:** User-specified derive macros beyond defaults
-- **Validation constraints:** Min/max values, regex patterns, custom validators
-- **Watch mode:** Auto-regeneration on file changes
-- **Configuration file:** `.lumosrc` for project-wide settings
-- **Package publishing:** crates.io (Rust) and npm (TypeScript)
-- **Language Server Protocol:** Advanced IntelliSense and error checking
-
-### Resolved Challenges:
-- ✅ **Enum representation:** Solved via discriminated unions in TypeScript
-- ✅ **IR flexibility:** Enum-based TypeDefinition supports extensibility
-- ✅ **Borsh compatibility:** Sequential discriminants match Borsh defaults
-- ✅ **Production readiness:** CI/CD, documentation, benchmarks complete
-- ✅ **Code quality:** 0 warnings, 0 vulnerabilities, 100% tests passing
-
-### Remaining Challenges:
-- **Generics:** May require significant IR changes for type parameters
-- **Macros:** Complex to parse and generate custom proc macros
-- **Breaking changes:** Need migration tooling for schema evolution
-- **Publishing:** Awaiting crates.io, npm, VS Marketplace deployment
-
----
-
-## Metrics & Success Criteria
-
-### Phase 1 Success Criteria ✅ (2025-01-17)
-- [x] Parse all 5 example schemas
-- [x] Generate valid Rust code (verified via compilation)
-- [x] Generate valid TypeScript code (syntax validation)
-- [x] 100% test pass rate (50/50)
-- [x] Context-aware generation working
-- [x] E2E tests with actual compilation
-
-### Phase 2 Success Criteria ✅ (2025-01-17)
-- [x] CLI executable (`lumos` command)
-- [x] File I/O working
-- [x] Generate code to filesystem
-- [x] 4 commands implemented (generate, validate, init, check)
-- [x] Help documentation complete
-- [x] Colorized output
-
-### Phase 3.1 Success Criteria 🔄 (IN PROGRESS)
-
-**Week 1 - AST & Parser ✅**
-- [x] Enum syntax design with 8 comprehensive patterns
-- [x] AST support for 3 enum variant types
-- [x] Complete parser implementation
-- [x] 5 new parser tests passing
-- [x] Design documentation (500+ lines)
-
-**Week 2 - IR & Transform ✅**
-- [x] Enum-based TypeDefinition IR
-- [x] EnumDefinition and EnumVariantDefinition types
-- [x] Complete AST→IR transform for all variants
-- [x] 3 new transform tests passing
-- [x] All generators updated for new IR
-- [x] 57/57 tests passing (100%)
-
-**Week 3 - Code Generation ✅**
-- [x] Rust enum generator with context-aware derives
-- [x] TypeScript discriminated union generator with `kind` field
-- [x] Borsh schema generation for enums (`borsh.rustEnum`)
-- [x] 6 new unit tests (3 Rust + 3 TypeScript)
-- [x] E2E compilation test with enums
-- [x] 64/64 tests passing (100%)
-
-**Week 4 - Polish ✅ COMPLETE**
-- [x] CLAUDE.md documentation updates
-- [x] execution-plan.md comprehensive update
-- [x] Real-world Solana instruction pattern validation (via E2E tests)
-- [x] Performance optimization (efficient test suite)
-
-### Phase 3.2 Success Criteria ✅ (2025-11-18)
-- [x] Complete VSCode extension with syntax highlighting
-- [x] 13 code snippets for common patterns
-- [x] Language configuration (auto-closing, comments)
-- [x] Extension commands (generate, validate)
-- [x] Professional branding and icon
-- [x] Documentation (README, CHANGELOG, LICENSE)
-- [x] Packaged .vsix ready for installation
-
-### Phase 3.3 Success Criteria ✅ (2025-11-18)
-- [x] 0 compiler warnings
-- [x] 0 clippy warnings
-- [x] 0 security vulnerabilities
-- [x] GitHub Actions CI (multi-OS testing)
-- [x] GitHub Actions release (6-platform builds)
-- [x] Comprehensive API documentation (0 rustdoc warnings)
-- [x] 9 doc tests passing
-- [x] 15 performance benchmarks
-- [x] Package metadata ready for publishing
-- [x] 64/64 tests passing (100% success rate)
-
----
-
-## Team & Ownership
-
-**Primary Developer:** RECTOR (rz1989s)
-**Organization:** getlumos
-**Repository:** https://github.com/getlumos/lumos
-**License:** MIT or Apache 2.0 (dual-licensed)
-
----
-
-## Resources
-
-- **Anchor Framework:** https://www.anchor-lang.com/
-- **Borsh Specification:** https://borsh.io/
-- **Solana Docs:** https://docs.solana.com/
-- **syn crate:** https://docs.rs/syn/
-- **Project Execution Plan:** `docs/execution-plan.md`
-
----
-
-**Last Updated:** 2025-11-18 (Phase 3.3 - Production Polish complete)
-**Next Update:** When Phase 3.4 features begin (validation constraints, migration tooling, or package publishing)
+**Last Updated:** 2025-11-18
+**Status:** Ready for crates.io publishing
