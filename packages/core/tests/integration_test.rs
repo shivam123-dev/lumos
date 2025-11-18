@@ -15,12 +15,10 @@ fn test_parse_gaming_schema() {
     path.pop(); // Go up from packages
     path.push("examples/gaming/schema.lumos");
 
-    let content = fs::read_to_string(&path)
-        .expect("Failed to read gaming schema file");
+    let content = fs::read_to_string(&path).expect("Failed to read gaming schema file");
 
     // Parse to AST
-    let ast = parse_lumos_file(&content)
-        .expect("Failed to parse gaming schema");
+    let ast = parse_lumos_file(&content).expect("Failed to parse gaming schema");
 
     // Should have 4 items: PlayerAccount, GameItem, Leaderboard, MatchResult
     assert_eq!(ast.items.len(), 4);
@@ -40,8 +38,7 @@ fn test_parse_gaming_schema() {
     }
 
     // Transform to IR
-    let ir = transform_to_ir(ast)
-        .expect("Failed to transform to IR");
+    let ir = transform_to_ir(ast).expect("Failed to transform to IR");
 
     assert_eq!(ir.len(), 4);
 
@@ -57,17 +54,14 @@ fn test_parse_nft_marketplace_schema() {
     path.pop();
     path.push("examples/nft-marketplace/schema.lumos");
 
-    let content = fs::read_to_string(&path)
-        .expect("Failed to read NFT marketplace schema file");
+    let content = fs::read_to_string(&path).expect("Failed to read NFT marketplace schema file");
 
-    let ast = parse_lumos_file(&content)
-        .expect("Failed to parse NFT marketplace schema");
+    let ast = parse_lumos_file(&content).expect("Failed to parse NFT marketplace schema");
 
     // Should have 4 items: Marketplace, NftListing, NftMetadata, PurchaseReceipt
     assert_eq!(ast.items.len(), 4);
 
-    let ir = transform_to_ir(ast)
-        .expect("Failed to transform to IR");
+    let ir = transform_to_ir(ast).expect("Failed to transform to IR");
 
     assert_eq!(ir.len(), 4);
 }
@@ -79,18 +73,15 @@ fn test_parse_defi_staking_schema() {
     path.pop();
     path.push("examples/defi-staking/schema.lumos");
 
-    let content = fs::read_to_string(&path)
-        .expect("Failed to read DeFi staking schema file");
+    let content = fs::read_to_string(&path).expect("Failed to read DeFi staking schema file");
 
-    let ast = parse_lumos_file(&content)
-        .expect("Failed to parse DeFi staking schema");
+    let ast = parse_lumos_file(&content).expect("Failed to parse DeFi staking schema");
 
-    assert!(ast.items.len() > 0);
+    assert!(!ast.items.is_empty());
 
-    let ir = transform_to_ir(ast)
-        .expect("Failed to transform to IR");
+    let ir = transform_to_ir(ast).expect("Failed to transform to IR");
 
-    assert!(ir.len() > 0);
+    assert!(!ir.is_empty());
 }
 
 #[test]
@@ -100,18 +91,15 @@ fn test_parse_token_vesting_schema() {
     path.pop();
     path.push("examples/token-vesting/schema.lumos");
 
-    let content = fs::read_to_string(&path)
-        .expect("Failed to read token vesting schema file");
+    let content = fs::read_to_string(&path).expect("Failed to read token vesting schema file");
 
-    let ast = parse_lumos_file(&content)
-        .expect("Failed to parse token vesting schema");
+    let ast = parse_lumos_file(&content).expect("Failed to parse token vesting schema");
 
-    assert!(ast.items.len() > 0);
+    assert!(!ast.items.is_empty());
 
-    let ir = transform_to_ir(ast)
-        .expect("Failed to transform to IR");
+    let ir = transform_to_ir(ast).expect("Failed to transform to IR");
 
-    assert!(ir.len() > 0);
+    assert!(!ir.is_empty());
 }
 
 #[test]
@@ -121,16 +109,13 @@ fn test_parse_dao_governance_schema() {
     path.pop();
     path.push("examples/dao-governance/schema.lumos");
 
-    let content = fs::read_to_string(&path)
-        .expect("Failed to read DAO governance schema file");
+    let content = fs::read_to_string(&path).expect("Failed to read DAO governance schema file");
 
-    let ast = parse_lumos_file(&content)
-        .expect("Failed to parse DAO governance schema");
+    let ast = parse_lumos_file(&content).expect("Failed to parse DAO governance schema");
 
-    assert!(ast.items.len() > 0);
+    assert!(!ast.items.is_empty());
 
-    let ir = transform_to_ir(ast)
-        .expect("Failed to transform to IR");
+    let ir = transform_to_ir(ast).expect("Failed to transform to IR");
 
-    assert!(ir.len() > 0);
+    assert!(!ir.is_empty());
 }

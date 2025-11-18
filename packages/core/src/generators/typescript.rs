@@ -5,7 +5,9 @@
 //!
 //! Generates TypeScript interfaces and Borsh schemas from IR for client-side integration.
 
-use crate::ir::{EnumDefinition, EnumVariantDefinition, StructDefinition, TypeDefinition, TypeInfo};
+use crate::ir::{
+    EnumDefinition, EnumVariantDefinition, StructDefinition, TypeDefinition, TypeInfo,
+};
 use std::collections::HashSet;
 
 /// Generate TypeScript code from a type definition
@@ -30,12 +32,12 @@ fn generate_struct(struct_def: &StructDefinition) -> String {
         for import in imports {
             output.push_str(&format!("{};\n", import));
         }
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Generate interface
     output.push_str(&generate_struct_interface(struct_def));
-    output.push_str("\n");
+    output.push('\n');
 
     // Generate Borsh schema if Solana type
     if struct_def.metadata.solana {
@@ -59,12 +61,12 @@ fn generate_enum(enum_def: &EnumDefinition) -> String {
         for import in imports {
             output.push_str(&format!("{};\n", import));
         }
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Generate discriminated union type
     output.push_str(&generate_enum_type(enum_def));
-    output.push_str("\n");
+    output.push('\n');
 
     // Generate Borsh schema if Solana type
     if enum_def.metadata.solana {
@@ -104,13 +106,13 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
         for import in sorted_imports {
             output.push_str(&format!("{};\n", import));
         }
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Generate each type definition
     for (i, type_def) in type_defs.iter().enumerate() {
         if i > 0 {
-            output.push_str("\n");
+            output.push('\n');
         }
 
         match type_def {
@@ -119,10 +121,10 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
 
                 // Add Borsh schema for Solana types
                 if s.metadata.solana {
-                    output.push_str("\n");
+                    output.push('\n');
                     output.push_str(&generate_struct_borsh_schema(s));
                     if i < type_defs.len() - 1 {
-                        output.push_str("\n");
+                        output.push('\n');
                     }
                 }
             }
@@ -131,10 +133,10 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
 
                 // Add Borsh schema for Solana types
                 if e.metadata.solana {
-                    output.push_str("\n");
+                    output.push('\n');
                     output.push_str(&generate_enum_borsh_schema(e));
                     if i < type_defs.len() - 1 {
-                        output.push_str("\n");
+                        output.push('\n');
                     }
                 }
             }
@@ -155,7 +157,10 @@ fn generate_struct_interface(struct_def: &StructDefinition) -> String {
     for field in &struct_def.fields {
         let ts_type = map_type_to_typescript(&field.type_info);
         let optional_marker = if field.optional { "?" } else { "" };
-        output.push_str(&format!("  {}{}: {};\n", field.name, optional_marker, ts_type));
+        output.push_str(&format!(
+            "  {}{}: {};\n",
+            field.name, optional_marker, ts_type
+        ));
     }
 
     output.push_str("}\n");
@@ -190,8 +195,8 @@ fn generate_enum_type(enum_def: &EnumDefinition) -> String {
     // Generate discriminated union type
     output.push_str(&format!("export type {} =\n", enum_def.name));
 
-    for (i, variant) in enum_def.variants.iter().enumerate() {
-        let prefix = if i == 0 { "  | " } else { "  | " };
+    for variant in &enum_def.variants {
+        let prefix = "  | ";
 
         match variant {
             EnumVariantDefinition::Unit { name } => {
@@ -237,7 +242,7 @@ fn generate_enum_borsh_schema(enum_def: &EnumDefinition) -> String {
                 output.push_str(&format!("  borsh.unit('{}'),\n", name));
             }
             EnumVariantDefinition::Tuple { name, types } => {
-                output.push_str(&format!("  borsh.tuple([\n"));
+                output.push_str("  borsh.tuple([\n");
                 for type_info in types {
                     let borsh_type = map_type_to_borsh(type_info);
                     output.push_str(&format!("    {},\n", borsh_type));
@@ -245,7 +250,7 @@ fn generate_enum_borsh_schema(enum_def: &EnumDefinition) -> String {
                 output.push_str(&format!("  ], '{}'),\n", name));
             }
             EnumVariantDefinition::Struct { name, fields } => {
-                output.push_str(&format!("  borsh.struct([\n"));
+                output.push_str("  borsh.struct([\n");
                 for field in fields {
                     let borsh_type = map_type_to_borsh(&field.type_info);
                     output.push_str(&format!("    {}('{}'),\n", borsh_type, field.name));
@@ -344,9 +349,7 @@ fn map_type_to_typescript(type_info: &TypeInfo) -> String {
         TypeInfo::Primitive(type_name) => {
             match type_name.as_str() {
                 // Integer types → number (except u128/i128)
-                "u8" | "u16" | "u32" | "u64" | "i8" | "i16" | "i32" | "i64" => {
-                    "number".to_string()
-                }
+                "u8" | "u16" | "u32" | "u64" | "i8" | "i16" | "i32" | "i64" => "number".to_string(),
                 "u128" | "i128" => "bigint".to_string(),
 
                 // Floating point
@@ -418,7 +421,10 @@ fn map_type_to_borsh(type_info: &TypeInfo) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{EnumDefinition, EnumVariantDefinition, FieldDefinition, Metadata, StructDefinition, TypeDefinition, TypeInfo};
+    use crate::ir::{
+        EnumDefinition, EnumVariantDefinition, FieldDefinition, Metadata, StructDefinition,
+        TypeDefinition, TypeInfo,
+    };
 
     #[test]
     fn generates_simple_interface() {

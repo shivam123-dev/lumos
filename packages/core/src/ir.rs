@@ -46,15 +46,10 @@ pub struct EnumDefinition {
 #[derive(Debug, Clone)]
 pub enum EnumVariantDefinition {
     /// Unit variant (e.g., `Active`)
-    Unit {
-        name: String,
-    },
+    Unit { name: String },
 
     /// Tuple variant (e.g., `PlayerJoined(PublicKey, u64)`)
-    Tuple {
-        name: String,
-        types: Vec<TypeInfo>,
-    },
+    Tuple { name: String, types: Vec<TypeInfo> },
 
     /// Struct variant (e.g., `Initialize { authority: PublicKey }`)
     Struct {

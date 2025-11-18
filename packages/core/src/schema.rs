@@ -61,7 +61,7 @@ mod tests {
 
         if let Ok(schema) = result {
             assert_eq!(schema.name, "User");
-            assert_eq!(schema.solana, true);
+            assert!(schema.solana);
             assert_eq!(schema.fields.len(), 1);
             assert_eq!(schema.fields[0].name, "id");
             assert_eq!(schema.fields[0].type_name, "u64");

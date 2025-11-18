@@ -167,36 +167,26 @@ fn map_type_alias(name: &str) -> String {
 
 /// Extract metadata from struct attributes
 fn extract_struct_metadata(struct_def: &AstStruct) -> Metadata {
-    let mut metadata = Metadata::default();
-
-    // Check for @solana attribute
-    metadata.solana = struct_def.has_attribute("solana");
-
-    // Collect all attributes
-    metadata.attributes = struct_def
-        .attributes
-        .iter()
-        .map(|attr| attr.name.clone())
-        .collect();
-
-    metadata
+    Metadata {
+        solana: struct_def.has_attribute("solana"),
+        attributes: struct_def
+            .attributes
+            .iter()
+            .map(|attr| attr.name.clone())
+            .collect(),
+    }
 }
 
 /// Extract metadata from enum attributes
 fn extract_enum_metadata(enum_def: &AstEnum) -> Metadata {
-    let mut metadata = Metadata::default();
-
-    // Check for @solana attribute
-    metadata.solana = enum_def.has_attribute("solana");
-
-    // Collect all attributes
-    metadata.attributes = enum_def
-        .attributes
-        .iter()
-        .map(|attr| attr.name.clone())
-        .collect();
-
-    metadata
+    Metadata {
+        solana: enum_def.has_attribute("solana"),
+        attributes: enum_def
+            .attributes
+            .iter()
+            .map(|attr| attr.name.clone())
+            .collect(),
+    }
 }
 
 #[cfg(test)]

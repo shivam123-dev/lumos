@@ -17,9 +17,8 @@ pub fn parse_lumos_file(input: &str) -> Result<LumosFile> {
     let mut items = Vec::new();
 
     // Parse the file as Rust code using syn
-    let file = syn::parse_file(input).map_err(|e| {
-        LumosError::SchemaParse(format!("Failed to parse .lumos file: {}", e))
-    })?;
+    let file = syn::parse_file(input)
+        .map_err(|e| LumosError::SchemaParse(format!("Failed to parse .lumos file: {}", e)))?;
 
     // Extract struct and enum definitions
     for item in file.items {
@@ -137,11 +136,7 @@ fn parse_enum_variant(variant: syn::Variant) -> Result<EnumVariant> {
                 let field_def = parse_field(field)?;
                 fields.push(field_def);
             }
-            Ok(EnumVariant::Struct {
-                name,
-                fields,
-                span,
-            })
+            Ok(EnumVariant::Struct { name, fields, span })
         }
     }
 }

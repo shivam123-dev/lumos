@@ -234,12 +234,18 @@ impl TypeSpec {
     }
 
     /// Convert to string representation
-    pub fn to_string(&self) -> String {
+    pub fn as_string(&self) -> String {
         match self {
             TypeSpec::Primitive(name) => name.clone(),
-            TypeSpec::Array(inner) => format!("[{}]", inner.to_string()),
+            TypeSpec::Array(inner) => format!("[{}]", inner.as_string()),
             TypeSpec::UserDefined(name) => name.clone(),
         }
+    }
+}
+
+impl std::fmt::Display for TypeSpec {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_string())
     }
 }
 

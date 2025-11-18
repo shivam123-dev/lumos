@@ -5,7 +5,9 @@
 //!
 //! Generates production-ready Rust code from IR for use in Solana programs.
 
-use crate::ir::{EnumDefinition, EnumVariantDefinition, StructDefinition, TypeDefinition, TypeInfo};
+use crate::ir::{
+    EnumDefinition, EnumVariantDefinition, StructDefinition, TypeDefinition, TypeInfo,
+};
 use std::collections::HashSet;
 
 /// Generate Rust code from a type definition
@@ -26,7 +28,10 @@ fn generate_struct(struct_def: &StructDefinition) -> String {
 
     // Determine if this struct uses Anchor (#[account])
     let use_anchor = struct_def.metadata.solana
-        && struct_def.metadata.attributes.contains(&"account".to_string());
+        && struct_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string());
 
     // Collect required imports
     let imports = collect_struct_imports(struct_def);
@@ -34,7 +39,7 @@ fn generate_struct(struct_def: &StructDefinition) -> String {
         for import in imports {
             output.push_str(&format!("use {};\n", import));
         }
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Generate derives using context-aware function
@@ -72,7 +77,10 @@ fn generate_enum(enum_def: &EnumDefinition) -> String {
 
     // Determine if this enum uses Anchor (#[account])
     let use_anchor = enum_def.metadata.solana
-        && enum_def.metadata.attributes.contains(&"account".to_string());
+        && enum_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string());
 
     // Collect required imports
     let imports = collect_enum_imports(enum_def);
@@ -80,7 +88,7 @@ fn generate_enum(enum_def: &EnumDefinition) -> String {
         for import in imports {
             output.push_str(&format!("use {};\n", import));
         }
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Generate derives using context-aware function
@@ -104,7 +112,7 @@ fn generate_enum(enum_def: &EnumDefinition) -> String {
                 output.push_str(&format!("    {},\n", name));
             }
             EnumVariantDefinition::Tuple { name, types } => {
-                let type_strs: Vec<String> = types.iter().map(|t| map_type_to_rust(t)).collect();
+                let type_strs: Vec<String> = types.iter().map(map_type_to_rust).collect();
                 output.push_str(&format!("    {}({}),\n", name, type_strs.join(", ")));
             }
             EnumVariantDefinition::Struct { name, fields } => {
@@ -204,13 +212,13 @@ pub fn generate_module(type_defs: &[TypeDefinition]) -> String {
         for import in sorted_imports {
             output.push_str(&format!("use {};\n", import));
         }
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Generate each type definition
     for (i, type_def) in type_defs.iter().enumerate() {
         if i > 0 {
-            output.push_str("\n");
+            output.push('\n');
         }
 
         match type_def {
@@ -255,7 +263,12 @@ fn generate_enum_with_context(enum_def: &EnumDefinition, use_anchor: bool) -> St
     }
 
     // Add Solana-specific attributes
-    if enum_def.metadata.solana && enum_def.metadata.attributes.contains(&"account".to_string()) {
+    if enum_def.metadata.solana
+        && enum_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string())
+    {
         output.push_str("#[account]\n");
     }
 
@@ -269,7 +282,7 @@ fn generate_enum_with_context(enum_def: &EnumDefinition, use_anchor: bool) -> St
                 output.push_str(&format!("    {},\n", name));
             }
             EnumVariantDefinition::Tuple { name, types } => {
-                let type_strs: Vec<String> = types.iter().map(|t| map_type_to_rust(t)).collect();
+                let type_strs: Vec<String> = types.iter().map(map_type_to_rust).collect();
                 output.push_str(&format!("    {}({}),\n", name, type_strs.join(", ")));
             }
             EnumVariantDefinition::Struct { name, fields } => {
@@ -288,11 +301,6 @@ fn generate_enum_with_context(enum_def: &EnumDefinition, use_anchor: bool) -> St
     output
 }
 
-/// Generate just the struct definition (without imports/header)
-fn generate_struct_only(struct_def: &StructDefinition) -> String {
-    generate_struct_with_context(struct_def, false)
-}
-
 /// Generate struct with context (e.g., whether module uses Anchor)
 fn generate_struct_with_context(struct_def: &StructDefinition, use_anchor: bool) -> String {
     let mut output = String::new();
@@ -304,7 +312,12 @@ fn generate_struct_with_context(struct_def: &StructDefinition, use_anchor: bool)
     }
 
     // Add Solana-specific attributes
-    if struct_def.metadata.solana && struct_def.metadata.attributes.contains(&"account".to_string()) {
+    if struct_def.metadata.solana
+        && struct_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string())
+    {
         output.push_str("#[account]\n");
     }
 
@@ -327,7 +340,12 @@ fn generate_enum_derives_with_context(enum_def: &EnumDefinition, use_anchor: boo
     let mut derives = Vec::new();
 
     // If using #[account], no derives needed (Anchor provides them)
-    if enum_def.metadata.solana && enum_def.metadata.attributes.contains(&"account".to_string()) {
+    if enum_def.metadata.solana
+        && enum_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string())
+    {
         return derives;
     }
 
@@ -353,11 +371,19 @@ fn generate_enum_derives_with_context(enum_def: &EnumDefinition, use_anchor: boo
 }
 
 /// Generate derives with context about whether we're using Anchor
-fn generate_struct_derives_with_context(struct_def: &StructDefinition, use_anchor: bool) -> Vec<String> {
+fn generate_struct_derives_with_context(
+    struct_def: &StructDefinition,
+    use_anchor: bool,
+) -> Vec<String> {
     let mut derives = Vec::new();
 
     // If using #[account], no derives needed (Anchor provides them)
-    if struct_def.metadata.solana && struct_def.metadata.attributes.contains(&"account".to_string()) {
+    if struct_def.metadata.solana
+        && struct_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string())
+    {
         return derives;
     }
 
@@ -389,7 +415,11 @@ fn collect_enum_imports(enum_def: &EnumDefinition) -> HashSet<String> {
     // Check if we need Borsh or Anchor imports
     if enum_def.metadata.solana {
         // If using #[account], use Anchor imports (includes Borsh)
-        if enum_def.metadata.attributes.contains(&"account".to_string()) {
+        if enum_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string())
+        {
             imports.insert("anchor_lang::prelude::*".to_string());
         } else {
             // Otherwise use Borsh directly
@@ -424,7 +454,11 @@ fn collect_struct_imports(struct_def: &StructDefinition) -> HashSet<String> {
     // Check if we need Borsh or Anchor imports
     if struct_def.metadata.solana {
         // If using #[account], use Anchor imports (includes Borsh)
-        if struct_def.metadata.attributes.contains(&"account".to_string()) {
+        if struct_def
+            .metadata
+            .attributes
+            .contains(&"account".to_string())
+        {
             imports.insert("anchor_lang::prelude::*".to_string());
         } else {
             // Otherwise use Borsh directly
@@ -460,28 +494,6 @@ fn collect_imports_from_type(type_info: &TypeInfo, imports: &mut HashSet<String>
             // User-defined types are assumed to be in the same module
         }
     }
-}
-
-/// Generate derive macros based on metadata (without context)
-fn generate_derives(struct_def: &StructDefinition) -> Vec<String> {
-    let mut derives = Vec::new();
-
-    // If using Anchor #[account], don't add any derives (Anchor provides them)
-    if struct_def.metadata.solana && struct_def.metadata.attributes.contains(&"account".to_string()) {
-        return derives; // Empty - Anchor #[account] provides all derives
-    }
-
-    // Add Borsh derives for Solana types
-    if struct_def.metadata.solana {
-        derives.push("BorshSerialize".to_string());
-        derives.push("BorshDeserialize".to_string());
-    }
-
-    // Always add Debug and Clone (when not using #[account])
-    derives.push("Debug".to_string());
-    derives.push("Clone".to_string());
-
-    derives
 }
 
 /// Map IR type to Rust type
@@ -522,7 +534,10 @@ fn map_type_to_rust(type_info: &TypeInfo) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{EnumDefinition, EnumVariantDefinition, FieldDefinition, Metadata, StructDefinition, TypeDefinition, TypeInfo};
+    use crate::ir::{
+        EnumDefinition, EnumVariantDefinition, FieldDefinition, Metadata, StructDefinition,
+        TypeDefinition, TypeInfo,
+    };
 
     #[test]
     fn generates_simple_struct() {
@@ -585,15 +600,11 @@ mod tests {
     fn generates_optional_fields() {
         let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Profile".to_string(),
-            fields: vec![
-                FieldDefinition {
-                    name: "email".to_string(),
-                    type_info: TypeInfo::Option(Box::new(TypeInfo::Primitive(
-                        "String".to_string(),
-                    ))),
-                    optional: true,
-                },
-            ],
+            fields: vec![FieldDefinition {
+                name: "email".to_string(),
+                type_info: TypeInfo::Option(Box::new(TypeInfo::Primitive("String".to_string()))),
+                optional: true,
+            }],
             metadata: Metadata::default(),
         });
 
@@ -605,13 +616,11 @@ mod tests {
     fn generates_array_fields() {
         let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Team".to_string(),
-            fields: vec![
-                FieldDefinition {
-                    name: "members".to_string(),
-                    type_info: TypeInfo::Array(Box::new(TypeInfo::Primitive("u64".to_string()))),
-                    optional: false,
-                },
-            ],
+            fields: vec![FieldDefinition {
+                name: "members".to_string(),
+                type_info: TypeInfo::Array(Box::new(TypeInfo::Primitive("u64".to_string()))),
+                optional: false,
+            }],
             metadata: Metadata::default(),
         });
 
@@ -643,13 +652,11 @@ mod tests {
     fn maps_publickey_to_pubkey() {
         let type_def = TypeDefinition::Struct(StructDefinition {
             name: "Account".to_string(),
-            fields: vec![
-                FieldDefinition {
-                    name: "key".to_string(),
-                    type_info: TypeInfo::Primitive("PublicKey".to_string()),
-                    optional: false,
-                },
-            ],
+            fields: vec![FieldDefinition {
+                name: "key".to_string(),
+                type_info: TypeInfo::Primitive("PublicKey".to_string()),
+                optional: false,
+            }],
             metadata: Metadata {
                 solana: true,
                 attributes: vec![],

@@ -452,7 +452,10 @@ fn test_e2e_enum_schema_compiles() {
     let has_serialization = rust_code.contains("BorshSerialize")
         || rust_code.contains("AnchorSerialize")
         || rust_code.contains("borsh::");
-    assert!(has_serialization, "Expected serialization support (Borsh or Anchor) in generated code");
+    assert!(
+        has_serialization,
+        "Expected serialization support (Borsh or Anchor) in generated code"
+    );
 
     // NOTE: Skipping Rust compilation for enum schema because it mixes Anchor + non-Anchor types,
     // which creates Borsh ambiguity in test Cargo.toml (includes both anchor-lang and borsh deps).

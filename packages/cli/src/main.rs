@@ -88,11 +88,7 @@ fn run_generate(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
     let output_dir = output_dir.unwrap_or_else(|| Path::new("."));
 
     // Read schema file
-    println!(
-        "{:>12} {}",
-        "Reading".cyan().bold(),
-        schema_path.display()
-    );
+    println!("{:>12} {}", "Reading".cyan().bold(), schema_path.display());
 
     let content = fs::read_to_string(schema_path)
         .with_context(|| format!("Failed to read schema file: {}", schema_path.display()))?;
@@ -104,8 +100,7 @@ fn run_generate(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
         .with_context(|| format!("Failed to parse schema: {}", schema_path.display()))?;
 
     // Transform to IR
-    let ir = transform_to_ir(ast)
-        .with_context(|| "Failed to transform AST to IR")?;
+    let ir = transform_to_ir(ast).with_context(|| "Failed to transform AST to IR")?;
 
     if ir.is_empty() {
         eprintln!(
@@ -169,14 +164,10 @@ fn run_validate(schema_path: &Path) -> Result<()> {
     let ast = parse_lumos_file(&content)
         .with_context(|| format!("Failed to parse schema: {}", schema_path.display()))?;
 
-    let ir = transform_to_ir(ast)
-        .with_context(|| "Failed to transform AST to IR")?;
+    let ir = transform_to_ir(ast).with_context(|| "Failed to transform AST to IR")?;
 
     if ir.is_empty() {
-        println!(
-            "{}: No type definitions found",
-            "warning".yellow().bold()
-        );
+        println!("{}: No type definitions found", "warning".yellow().bold());
     } else {
         println!(
             "{:>12} Found {} valid type definitions",
@@ -191,11 +182,7 @@ fn run_validate(schema_path: &Path) -> Result<()> {
 /// Initialize a new LUMOS project
 fn run_init(project_name: Option<&str>) -> Result<()> {
     let project_dir = if let Some(name) = project_name {
-        println!(
-            "{:>12} project: {}",
-            "Creating".cyan().bold(),
-            name.bold()
-        );
+        println!("{:>12} project: {}", "Creating".cyan().bold(), name.bold());
         let dir = PathBuf::from(name);
         fs::create_dir_all(&dir)
             .with_context(|| format!("Failed to create project directory: {}", name))?;
@@ -303,10 +290,7 @@ https://github.com/RECTOR-LABS/lumos
 fn run_check(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
     let output_dir = output_dir.unwrap_or_else(|| Path::new("."));
 
-    println!(
-        "{:>12} generated code status",
-        "Checking".cyan().bold()
-    );
+    println!("{:>12} generated code status", "Checking".cyan().bold());
 
     // Check if output files exist
     let rust_output = output_dir.join("generated.rs");
@@ -316,10 +300,7 @@ fn run_check(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
     let ts_exists = ts_output.exists();
 
     if !rust_exists || !ts_exists {
-        eprintln!(
-            "{}: Generated files not found",
-            "error".red().bold()
-        );
+        eprintln!("{}: Generated files not found", "error".red().bold());
         if !rust_exists {
             eprintln!("  Missing: {}", rust_output.display());
         }
@@ -338,8 +319,7 @@ fn run_check(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
     let ast = parse_lumos_file(&content)
         .with_context(|| format!("Failed to parse schema: {}", schema_path.display()))?;
 
-    let ir = transform_to_ir(ast)
-        .with_context(|| "Failed to transform AST to IR")?;
+    let ir = transform_to_ir(ast).with_context(|| "Failed to transform AST to IR")?;
 
     // Generate fresh code
     let fresh_rust = rust::generate_module(&ir);
