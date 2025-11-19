@@ -1,7 +1,7 @@
 # CLAUDE.md - LUMOS Core
 
 **Repository:** https://github.com/getlumos/lumos
-**Website:** https://lumos-lang.com
+**Website:** https://lumos-lang.org
 **Purpose:** Type-safe schema language bridging TypeScript ↔ Rust for Solana development
 
 ---
@@ -156,7 +156,7 @@ enum GameState {
 - [x] Benchmarks added
 - [x] CI/CD pipeline working
 - [x] Organization migrated (getlumos)
-- [x] Homepage updated (lumos-lang.com)
+- [x] Homepage updated (lumos-lang.org)
 - [x] Published to crates.io (lumos-core v0.1.0, lumos-cli v0.1.0)
 - [ ] VSCode extension published
 

@@ -47,7 +47,7 @@
 
 **Goal**: Low barrier to adoption, excellent documentation
 
-- [ ] Interactive playground on lumos-lang.com
+- [ ] Interactive playground on lumos-lang.org
 - [ ] Video tutorial series (YouTube)
 - [ ] Migration guide from manual Borsh serialization
 - [ ] Performance benchmarks vs manual implementations
@@ -145,7 +145,7 @@
 - [x] Security audit clean (0 vulnerabilities)
 - [x] Published to crates.io (lumos-core, lumos-cli)
 - [x] Organization migrated to getlumos
-- [x] Homepage updated to lumos-lang.com
+- [x] Homepage updated to lumos-lang.org
 - [x] Comprehensive documentation
 - [x] CI/CD pipeline with GitHub Actions
 - [x] VSCode extension created (syntax highlighting, snippets)
