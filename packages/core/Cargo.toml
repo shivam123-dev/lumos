@@ -21,7 +21,12 @@ thiserror.workspace = true
 [dev-dependencies]
 tempfile = "3.8"
 criterion = { version = "0.5", features = ["html_reports"] }
+borsh = { version = "1.0", features = ["derive"] }
 
 [[bench]]
 name = "benchmarks"
+harness = false
+
+[[bench]]
+name = "borsh_comparison"
 harness = false
