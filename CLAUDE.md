@@ -181,12 +181,21 @@ cargo add lumos-core
 
 ---
 
+## Community Resources
+
+- **awesome-lumos** - 5 production-ready examples (NFT Marketplace, DeFi Staking, DAO Governance, Gaming Inventory, Token Vesting) - 53 types, 42 instructions, 4000+ LOC
+- **docs-lumos** - Official documentation at https://lumos-lang.org
+- **vscode-lumos** - VSCode extension (syntax highlighting, snippets, commands) - ready for VS Marketplace
+
+---
+
 ## Related Repositories
 
 - **vscode-lumos** - VSCode extension (syntax highlighting, snippets, commands)
 - **awesome-lumos** - Community examples and full-stack applications
+- **docs-lumos** - Official documentation site
 
 ---
 
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-11-20
 **Status:** Published on crates.io ✅
