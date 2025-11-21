@@ -5,6 +5,17 @@
 
 set -e
 
+# Check GitHub CLI authentication
+if ! gh auth status &>/dev/null; then
+  echo "❌ Error: GitHub CLI not authenticated"
+  echo ""
+  echo "Please authenticate with GitHub CLI first:"
+  echo "  gh auth login"
+  echo ""
+  echo "Then run this script again."
+  exit 1
+fi
+
 echo "🏷️  Setting up LUMOS issue labels..."
 echo ""
 
