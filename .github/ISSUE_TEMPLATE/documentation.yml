@@ -1,0 +1,132 @@
+name: 📖 Documentation Improvement
+description: Suggest improvements to LUMOS documentation
+title: "[Docs]: "
+labels: ["area:docs", "type:documentation", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve LUMOS documentation! Clear docs help everyone learn faster.
+
+        Note: This tracks docs-lumos repository work and lumos-lang.org website.
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Documentation Type
+      description: What kind of documentation needs improvement?
+      options:
+        - Getting Started / Tutorial
+        - API Reference / Syntax Guide
+        - CLI Reference
+        - Integration Guide
+        - Examples / Use Cases
+        - Architecture / Design Docs
+        - Migration Guide
+        - FAQ / Troubleshooting
+        - Website / Homepage
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      description: What needs to be done?
+      options:
+        - Missing Documentation (doesn't exist)
+        - Incorrect Information (needs fixing)
+        - Unclear Explanation (needs clarification)
+        - Outdated Content (needs updating)
+        - New Feature (needs documenting)
+        - Typo / Grammar
+        - Code Example Broken
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is this documentation? (URL or file path)
+      placeholder: |
+        - URL: https://lumos-lang.org/docs/getting-started
+        - Or file: docs/syntax-reference.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current Problem
+      description: What's wrong or missing in the current documentation?
+      placeholder: |
+        The current docs say X, but...
+        Or: There's no documentation for Y feature...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: How should the documentation be improved?
+      placeholder: |
+        The docs should explain...
+        Or: Add a section about...
+        Or: Change the example to...
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Proposed Content / Example (optional)
+      description: If you have specific content or code examples to suggest, add them here
+      placeholder: |
+        Here's a better example:
+        ```lumos
+        #[solana]
+        struct BetterExample {
+          field: u64,
+        }
+        ```
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who would benefit from this documentation improvement?
+      options:
+        - Beginners (new to LUMOS)
+        - Intermediate (some experience)
+        - Advanced (complex use cases)
+        - All users
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Why is this documentation important? What confusion does it prevent?
+      placeholder: "Without this, developers might..."
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Links to related docs, similar tools' docs, screenshots, etc.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these before submitting
+      options:
+        - label: I have searched existing documentation issues to avoid duplicates
+          required: true
+        - label: I have checked the latest documentation at https://lumos-lang.org
+          required: true
+        - label: I am willing to help write/review this documentation
+          required: false

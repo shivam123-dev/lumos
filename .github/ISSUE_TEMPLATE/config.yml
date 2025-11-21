@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/getlumos/lumos/discussions
+    about: Ask questions, share ideas, and discuss LUMOS with the community
+
+  - name: 📚 Documentation
+    url: https://lumos-lang.org
+    about: Read the official LUMOS documentation, guides, and tutorials
+
+  - name: 🌟 Awesome LUMOS
+    url: https://github.com/getlumos/awesome-lumos
+    about: Check out production-ready examples and full-stack applications
+
+  - name: 🔌 VSCode Extension
+    url: https://github.com/getlumos/vscode-lumos
+    about: VSCode extension repository (for extension-specific PRs/issues)

@@ -1,0 +1,111 @@
+name: ✨ Feature Request
+description: Suggest a new feature for LUMOS
+title: "[Feature]: "
+labels: ["type:feature", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe it in detail below.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component Area
+      description: Which part of LUMOS would this feature affect?
+      options:
+        - Core Compiler (Parser/Generator/IR)
+        - CLI Tool (lumos-cli)
+        - VSCode Extension (syntax/commands/snippets)
+        - Documentation (lumos-lang.org)
+        - Examples (awesome-lumos)
+        - Ecosystem/Tooling
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What's the current limitation?
+      placeholder: "Currently, LUMOS doesn't support X, which makes it difficult to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        I would like LUMOS to support...
+
+        For example:
+        ```lumos
+        #[solana]
+        struct Example {
+          new_feature: Type,
+        }
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: "I've tried workaround X, but it's not ideal because..."
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: Who would benefit from this feature? How would it improve LUMOS?
+      placeholder: |
+        - Solana developers building...
+        - Reduces boilerplate by...
+        - Improves type safety for...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (Your Opinion)
+      description: How important is this feature to you?
+      options:
+        - Critical (blocking my work)
+        - High (would significantly improve my workflow)
+        - Medium (nice to have)
+        - Low (minor improvement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples / Use Cases
+      description: Provide concrete examples of how this feature would be used
+      placeholder: |
+        Use case 1: Building a DeFi protocol that needs...
+        Use case 2: NFT marketplace requiring...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, or references
+      placeholder: "Similar feature in other tools: X, Y, Z..."
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these before submitting
+      options:
+        - label: I have searched existing issues/features to avoid duplicates
+          required: true
+        - label: This feature aligns with LUMOS's goal of type-safe Rust ↔ TypeScript bridging
+          required: true
+        - label: I am willing to help implement or test this feature
+          required: false

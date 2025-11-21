@@ -1,0 +1,147 @@
+name: 🔌 VSCode Extension Issue
+description: Report issues or suggest features for the VSCode extension
+title: "[VSCode]: "
+labels: ["area:vscode", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for issues related to **vscode-lumos** extension (syntax highlighting, commands, snippets).
+
+        Note: This issue will be tracked here and referenced in the [vscode-lumos](https://github.com/getlumos/vscode-lumos) repository.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      description: What kind of VSCode extension issue is this?
+      options:
+        - Bug (something broken)
+        - Feature Request (new functionality)
+        - Enhancement (improve existing)
+        - Documentation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: VSCode Component
+      description: Which part of the extension is affected?
+      options:
+        - Syntax Highlighting / Grammar
+        - Commands (Generate, Validate, Init, Check)
+        - Code Snippets
+        - Language Server / IntelliSense
+        - Configuration / Settings
+        - Extension Activation / Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the issue or feature request
+      placeholder: "When I open a .lumos file in VSCode..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce (for bugs)
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Open VSCode with LUMOS extension installed
+        2. Create/open a .lumos file
+        3. Type...
+        4. See issue...
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+      placeholder: "The syntax should be highlighted as..."
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+      placeholder: "Instead, the syntax appears as..."
+
+  - type: input
+    id: vscode_version
+    attributes:
+      label: VSCode Version
+      description: Run `code --version` or check Help > About
+      placeholder: "1.85.0"
+    validations:
+      required: true
+
+  - type: input
+    id: extension_version
+    attributes:
+      label: LUMOS Extension Version
+      description: Check in VSCode Extensions panel
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: lumos_version
+    attributes:
+      label: LUMOS CLI Version (if relevant)
+      description: Run `lumos --version`
+      placeholder: "v0.1.0"
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your system information
+      value: |
+        - OS: [e.g., macOS 14.0, Ubuntu 22.04, Windows 11]
+        - VSCode Install: [Stable, Insiders, VSCodium]
+        - Other relevant extensions: [Rust Analyzer, etc.]
+      render: markdown
+
+  - type: textarea
+    id: code_sample
+    attributes:
+      label: Code Sample (if applicable)
+      description: Paste .lumos code that triggers the issue
+      placeholder: |
+        #[solana]
+        struct Example {
+          field: u64,
+        }
+      render: rust
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / GIFs
+      description: Visual representation helps! Drag and drop images here.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Logs from VSCode Developer Tools (Help > Toggle Developer Tools > Console)
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these before submitting
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have tried reloading VSCode (Cmd/Ctrl + R)
+          required: false
+        - label: I have checked the extension is enabled and up to date
+          required: false
