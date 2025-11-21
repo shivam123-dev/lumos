@@ -101,12 +101,11 @@ pub fn validate_schema(source: &str) -> Result<(), JsValue> {
     Ok(())
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
     use super::*;
 
     #[test]
-    #[cfg(target_arch = "wasm32")]
     fn test_generate_code_simple_struct() {
         let source = r#"
             #[solana]
@@ -128,7 +127,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "wasm32")]
     fn test_generate_code_enum() {
         let source = r#"
             #[solana]
@@ -149,7 +147,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "wasm32")]
     fn test_validate_schema_valid() {
         let source = r#"
             #[solana]
@@ -163,7 +160,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_arch = "wasm32")]
     fn test_validate_schema_invalid() {
         let source = r#"
             #[solana]
