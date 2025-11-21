@@ -1,0 +1,130 @@
+name: 🐛 Bug Report
+description: Report a bug in LUMOS ecosystem
+title: "[Bug]: "
+labels: ["type:bug", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form to help us fix it quickly.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component Area
+      description: Which part of the LUMOS ecosystem is affected?
+      options:
+        - Core Compiler (Parser/Generator/IR)
+        - CLI Tool (lumos-cli)
+        - VSCode Extension (syntax/commands/snippets)
+        - Documentation (lumos-lang.org)
+        - Examples (awesome-lumos)
+        - Build/CI/Infrastructure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: "When I run `lumos generate schema.lumos`, the generated TypeScript..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Create a schema file with...
+        2. Run command `lumos generate`...
+        3. See error...
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "The generated code should..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: "Instead, the generated code..."
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: LUMOS Version
+      description: Run `lumos --version` or `cargo tree | grep lumos`
+      placeholder: "v0.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your system information
+      value: |
+        - OS: [e.g., macOS 14.0, Ubuntu 22.04, Windows 11]
+        - Rust version: [run `rustc --version`]
+        - Installation method: [cargo install, from source, binary]
+        - Shell: [bash, zsh, fish]
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: schema
+    attributes:
+      label: Schema Code (if applicable)
+      description: The `.lumos` schema that triggers the bug
+      placeholder: |
+        #[solana]
+        struct MyStruct {
+          field: u64,
+        }
+      render: rust
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs / Stack Trace
+      description: Paste any error messages, stack traces, or relevant output
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add screenshots, related issues, or any other context
+      placeholder: "This might be related to #123..."
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these before submitting
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I am using the latest version of LUMOS
+          required: false
+        - label: I have read the documentation at https://lumos-lang.org
+          required: false

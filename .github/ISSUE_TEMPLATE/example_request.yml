@@ -1,0 +1,169 @@
+name: 💡 Example Request
+description: Suggest a new example for awesome-lumos
+title: "[Example]: "
+labels: ["area:examples", "type:feature", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest a new production-ready example for the **awesome-lumos** repository!
+
+        Current examples: NFT Marketplace, DeFi Staking, DAO Governance, Gaming Inventory, Token Vesting
+
+        Note: This issue tracks work for the [awesome-lumos](https://github.com/getlumos/awesome-lumos) repository.
+
+  - type: input
+    id: example_name
+    attributes:
+      label: Example Name
+      description: What should this example be called?
+      placeholder: "e.g., DeFi Lending Pool, Token Swap, Prediction Market"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of Solana application is this?
+      options:
+        - DeFi (Decentralized Finance)
+        - NFT (Non-Fungible Tokens)
+        - Gaming / Metaverse
+        - DAO / Governance
+        - Social / Communication
+        - Infrastructure / Tooling
+        - Payment / E-commerce
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What does this example demonstrate? What problem does it solve?
+      placeholder: |
+        This example shows how to build a decentralized lending pool where users can...
+    validations:
+      required: true
+
+  - type: textarea
+    id: key_features
+    attributes:
+      label: Key Features
+      description: What are the main features this example should showcase?
+      placeholder: |
+        - Lend tokens to earn interest
+        - Borrow against collateral
+        - Liquidation mechanism
+        - Interest rate calculation
+      value: |
+        -
+        -
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: schema_types
+    attributes:
+      label: Data Structures Needed
+      description: What LUMOS types/structs would this example include?
+      placeholder: |
+        - LendingPool (pool configuration)
+        - UserAccount (deposits, borrows)
+        - Asset (token info, rates)
+        - Collateral (locked assets)
+      value: |
+        -
+        -
+        -
+
+  - type: textarea
+    id: complexity
+    attributes:
+      label: Complexity Level
+      description: How complex is this example? What LUMOS features does it use?
+      placeholder: |
+        Complexity: Medium-Advanced
+
+        LUMOS features used:
+        - Complex nested types (Vec<Option<T>>)
+        - Multiple account types
+        - Enums for state management
+        - Integration with Anchor framework
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Community Value (Your Opinion)
+      description: How valuable would this example be to the Solana community?
+      options:
+        - Very High (commonly needed, high demand)
+        - High (useful for many developers)
+        - Medium (niche but valuable)
+        - Low (nice to have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Reference Implementations
+      description: Links to similar projects or protocols for reference
+      placeholder: |
+        - Solend: https://github.com/solendprotocol/...
+        - Aave: https://docs.aave.com/...
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Real-World Use Cases
+      description: Who would use this example? What can they learn from it?
+      placeholder: |
+        Developers building:
+        - Lending protocols
+        - Collateralized borrowing platforms
+        - Yield farming applications
+
+        They will learn:
+        - Complex state management
+        - Financial calculations in Rust
+        - Multi-account transactions
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other ideas, mockups, or considerations?
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Interest
+      description: Would you like to contribute to this example?
+      options:
+        - label: I can help design the schema
+          required: false
+        - label: I can help write the Rust implementation
+          required: false
+        - label: I can help write the TypeScript SDK
+          required: false
+        - label: I can help with documentation
+          required: false
+        - label: I can help test the example
+          required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these before submitting
+      options:
+        - label: I have checked awesome-lumos to avoid duplicate examples
+          required: true
+        - label: This example showcases unique LUMOS features
+          required: true
+        - label: This example would be useful for Solana developers
+          required: true
