@@ -232,9 +232,16 @@ fn transform_field(field: AstField) -> Result<FieldDefinition> {
 fn transform_type(type_spec: AstType, optional: bool) -> Result<TypeInfo> {
     let base_type = match type_spec {
         AstType::Primitive(name) => {
-            // Map TypeScript-friendly aliases to Rust types
-            let rust_type = map_type_alias(&name);
-            TypeInfo::Primitive(rust_type)
+            // Check if it's a known primitive type
+            if is_valid_primitive_type(&name) {
+                // Map TypeScript-friendly aliases to Rust types
+                let rust_type = map_type_alias(&name);
+                TypeInfo::Primitive(rust_type)
+            } else {
+                // Treat as user-defined type (enum or struct defined in schema)
+                // Validation of whether the type actually exists happens in a later phase
+                TypeInfo::UserDefined(name)
+            }
         }
 
         AstType::Array(inner) => {
@@ -242,7 +249,11 @@ fn transform_type(type_spec: AstType, optional: bool) -> Result<TypeInfo> {
             TypeInfo::Array(Box::new(inner_type))
         }
 
-        AstType::UserDefined(name) => TypeInfo::UserDefined(name),
+        AstType::UserDefined(name) => {
+            // For now, accept user-defined types
+            // TODO: Validate against defined types in schema
+            TypeInfo::UserDefined(name)
+        }
     };
 
     // Wrap in Option if optional
@@ -251,6 +262,27 @@ fn transform_type(type_spec: AstType, optional: bool) -> Result<TypeInfo> {
     } else {
         Ok(base_type)
     }
+}
+
+/// Check if a type name is a valid primitive type
+fn is_valid_primitive_type(name: &str) -> bool {
+    matches!(
+        name,
+        // Unsigned integers
+        "u8" | "u16" | "u32" | "u64" | "u128" |
+        // Signed integers
+        "i8" | "i16" | "i32" | "i64" | "i128" |
+        // Floating point
+        "f32" | "f64" |
+        // Boolean
+        "bool" |
+        // String
+        "String" |
+        // Solana types
+        "PublicKey" | "Signature" | "Keypair" |
+        // TypeScript aliases
+        "number" | "string" | "boolean"
+    )
 }
 
 /// Map TypeScript-friendly type aliases to Rust types

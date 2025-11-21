@@ -11,14 +11,14 @@
 //!
 //! **Goal**: Prove LUMOS-generated code is equal or faster than hand-written Borsh
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use borsh::{BorshSerialize, BorshDeserialize};
+use borsh::{BorshDeserialize, BorshSerialize};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 // ===== Manual Borsh Implementation (Hand-Written) =====
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug)]
 pub struct ManualPlayer {
-    pub wallet: [u8; 32],  // Simulating PublicKey
+    pub wallet: [u8; 32], // Simulating PublicKey
     pub level: u16,
     pub experience: u64,
     pub equipped_items: Vec<[u8; 32]>,
@@ -279,11 +279,16 @@ fn bench_binary_size(c: &mut Criterion) {
     println!("\n=== Binary Size Comparison ===");
     println!("Manual Borsh: {} bytes", manual_bytes.len());
     println!("LUMOS Generated: {} bytes", lumos_bytes.len());
-    println!("Difference: {} bytes",
-        (lumos_bytes.len() as i64 - manual_bytes.len() as i64).abs());
+    println!(
+        "Difference: {} bytes",
+        (lumos_bytes.len() as i64 - manual_bytes.len() as i64).abs()
+    );
 
-    assert_eq!(manual_bytes.len(), lumos_bytes.len(),
-        "Binary sizes should be identical!");
+    assert_eq!(
+        manual_bytes.len(),
+        lumos_bytes.len(),
+        "Binary sizes should be identical!"
+    );
 
     // Benchmark the size calculation itself (trivial, but for completeness)
     c.bench_function("binary_size_calculation", |b| {

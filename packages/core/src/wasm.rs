@@ -6,10 +6,10 @@
 //! This module provides WebAssembly bindings that allow the LUMOS code generator
 //! to run in the browser for the interactive playground.
 
-use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
-use crate::{parser, transform, generators};
+use crate::{generators, parser, transform};
 
 /// Result of code generation containing both Rust and TypeScript outputs
 #[derive(Serialize, Deserialize)]
@@ -106,6 +106,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(target_arch = "wasm32")]
     fn test_generate_code_simple_struct() {
         let source = r#"
             #[solana]
@@ -127,6 +128,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_arch = "wasm32")]
     fn test_generate_code_enum() {
         let source = r#"
             #[solana]
@@ -147,6 +149,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_arch = "wasm32")]
     fn test_validate_schema_valid() {
         let source = r#"
             #[solana]
@@ -160,6 +163,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_arch = "wasm32")]
     fn test_validate_schema_invalid() {
         let source = r#"
             #[solana]

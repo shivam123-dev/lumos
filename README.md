@@ -11,6 +11,8 @@
 
 # LUMOS
 
+> **Write once. Deploy Everywhere.**
+
 **Illuminate your Solana development with type-safe cross-language code generation**
 
 *One schema to rule them all • TypeScript ↔ Rust synchronization • Borsh serialization • Anchor integration • Zero type drift • Production-ready code generation*
