@@ -9,6 +9,11 @@ Cargo.lock
 /build
 *.log
 
+# VSCode Extension
+vscode-lumos/node_modules/
+vscode-lumos/out/
+vscode-lumos/*.vsix
+
 # IDE
 .vscode/
 .idea/
@@ -30,3 +35,4 @@ coverage/
 # Environment
 .env
 .env.local
+packages/core/pkg/

@@ -1,0 +1,80 @@
+// DAO Governance System - Complete Schema
+// Demonstrates: Voting, proposals, member management
+
+#[solana]
+#[account]
+struct DaoConfig {
+    #[key]
+    authority: PublicKey,
+    governance_token_mint: PublicKey,
+
+    // Voting configuration
+    proposal_threshold: u64,
+    voting_period: i64,
+    quorum_percentage: u8,
+
+    // DAO stats
+    total_proposals: u32,
+    total_members: u32,
+    treasury_balance: u64,
+
+    is_active: bool,
+}
+
+#[solana]
+#[account]
+struct Proposal {
+    #[key]
+    id: u64,
+    proposer: PublicKey,
+    dao: PublicKey,
+
+    // Proposal details
+    #[max(100)]
+    title: String,
+    #[max(1000)]
+    description: String,
+    execution_data: Option<[u8]>,
+
+    // Voting data
+    votes_for: u64,
+    votes_against: u64,
+    votes_abstain: u64,
+
+    // Timing
+    created_at: i64,
+    voting_starts: i64,
+    voting_ends: i64,
+    executed_at: Option<i64>,
+
+    // State
+    status: u8,  // 0=draft, 1=active, 2=passed, 3=rejected, 4=executed
+    is_cancelled: bool,
+}
+
+#[solana]
+#[account]
+struct Vote {
+    #[key]
+    voter: PublicKey,
+    proposal: PublicKey,
+
+    vote_option: u8,  // 0=for, 1=against, 2=abstain
+    voting_power: u64,
+    timestamp: i64,
+}
+
+#[solana]
+#[account]
+struct Member {
+    #[key]
+    wallet: PublicKey,
+    dao: PublicKey,
+
+    voting_power: u64,
+    proposals_created: u32,
+    votes_cast: u32,
+
+    joined_at: i64,
+    is_active: bool,
+}
