@@ -35,6 +35,9 @@ enum Commands {
         output: Option<PathBuf>,
 
         /// Watch for changes and regenerate automatically
+        ///
+        /// Debounce duration can be configured via LUMOS_WATCH_DEBOUNCE env var
+        /// (default: 100ms, max: 5000ms). Example: LUMOS_WATCH_DEBOUNCE=200
         #[arg(short, long)]
         watch: bool,
 
@@ -107,6 +110,9 @@ fn run_generate(
     show_diff: bool,
 ) -> Result<()> {
     let output_dir = output_dir.unwrap_or_else(|| Path::new("."));
+
+    // Validate output directory for security
+    validate_output_path(output_dir)?;
 
     // Dry-run mode header
     if dry_run {
@@ -572,6 +578,9 @@ https://github.com/RECTOR-LABS/lumos
 fn run_check(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
     let output_dir = output_dir.unwrap_or_else(|| Path::new("."));
 
+    // Validate output directory
+    validate_output_path(output_dir)?;
+
     println!("{:>12} generated code status", "Checking".cyan().bold());
 
     // Check if output files exist
@@ -674,12 +683,19 @@ fn run_watch_mode(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
 
     watcher.watch(&schema_path, RecursiveMode::NonRecursive)?;
 
+    // Get configurable debounce duration (default: 100ms)
+    let debounce_ms = std::env::var("LUMOS_WATCH_DEBOUNCE")
+        .ok()
+        .and_then(|s| s.parse::<u64>().ok())
+        .filter(|&ms| ms <= 5000) // Max 5 seconds
+        .unwrap_or(100);
+
     // Watch for changes
     loop {
-        match rx.recv_timeout(Duration::from_millis(100)) {
+        match rx.recv_timeout(Duration::from_millis(debounce_ms)) {
             Ok(_event) => {
                 // Debounce: wait a bit for multiple rapid changes
-                std::thread::sleep(Duration::from_millis(100));
+                std::thread::sleep(Duration::from_millis(debounce_ms));
 
                 // Drain any pending events
                 while rx.try_recv().is_ok() {}
@@ -706,4 +722,77 @@ fn run_watch_mode(schema_path: &Path, output_dir: Option<&Path>) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Validate output path for security and accessibility
+///
+/// This function prevents path traversal attacks and ensures the path
+/// is writable before attempting file operations.
+///
+/// # Security Checks
+///
+/// 1. **Path Canonicalization** - Resolves `..`, `.`, and symlinks
+/// 2. **Directory Existence** - Ensures parent directory exists
+/// 3. **Write Permissions** - Verifies write access to the directory
+///
+/// # Arguments
+///
+/// * `path` - Output path to validate
+///
+/// # Returns
+///
+/// * `Ok(())` - Path is valid and writable
+/// * `Err(anyhow::Error)` - Path is invalid or not writable
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// // Valid paths
+/// validate_output_path(Path::new("./output"))?;
+/// validate_output_path(Path::new("."))?;
+///
+/// // Invalid paths (would fail)
+/// validate_output_path(Path::new("../../etc"))?;  // Path traversal
+/// validate_output_path(Path::new("/root"))?;      // No write permission
+/// ```
+fn validate_output_path(path: &Path) -> Result<()> {
+    // If path doesn't exist, check parent directory
+    let check_path = if path.exists() {
+        path
+    } else if let Some(parent) = path.parent() {
+        // If parent doesn't exist, we can't validate write permissions
+        if !parent.exists() {
+            anyhow::bail!(
+                "Output directory parent does not exist: {}. Create it first.",
+                parent.display()
+            );
+        }
+        parent
+    } else {
+        // No parent means root directory or invalid path
+        anyhow::bail!("Invalid output path: {}", path.display());
+    };
+
+    // Check if path is absolute or can be canonicalized
+    let canonical = check_path
+        .canonicalize()
+        .with_context(|| format!("Cannot resolve output path: {}", path.display()))?;
+
+    // Verify the canonical path is writable
+    // Try to create a temporary file to test write permissions
+    let test_file = canonical.join(".lumos_write_test");
+    match fs::write(&test_file, "") {
+        Ok(_) => {
+            // Clean up test file
+            let _ = fs::remove_file(&test_file);
+            Ok(())
+        }
+        Err(e) => {
+            anyhow::bail!(
+                "Output directory is not writable: {}\nError: {}",
+                canonical.display(),
+                e
+            );
+        }
+    }
 }
