@@ -121,6 +121,7 @@ export const UserAccountBorshSchema = borsh.struct([
 - [Examples](#-examples)
 - [Type Mapping](#-type-mapping)
 - [Roadmap](#-roadmap)
+- [Long-term Vision](docs/VISION.md)
 - [Tech Stack](#️-tech-stack)
 - [Test Suite](#-test-suite)
 - [Contributing](#-contributing)
@@ -750,6 +751,8 @@ export const ExampleBorshSchema = borsh.struct([
 ## 🚀 Roadmap
 
 > 📍 **Looking for our future plans?** See the detailed [ROADMAP.md](ROADMAP.md) for Phase 4+, including VSCode extension polish, community examples, and ecosystem expansion.
+
+> 🔮 **Curious about our long-term vision?** Check out [docs/VISION.md](docs/VISION.md) - LUMOS is evolving from a schema DSL into a full typed workflow programming language for developer automation.
 
 ### Phase 1: Core TypeScript ↔ Rust Codegen ✅ **COMPLETED**
 

@@ -132,6 +132,12 @@ Option<T>  → Option<T>   → T | undefined
 
 ---
 
+## Strategic Direction
+
+**For long-term vision**: See `docs/VISION.md` - LUMOS evolution from schema DSL to programming language
+
+---
+
 ## AI Assistant Guidelines
 
 ### ✅ DO:
