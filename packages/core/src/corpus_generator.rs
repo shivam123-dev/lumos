@@ -343,10 +343,27 @@ impl<'a> CorpusGenerator<'a> {
                 // None
                 vec![0]
             }
-            TypeInfo::UserDefined(_) => {
-                // For user-defined types, we can't easily generate valid instances
-                // Return empty bytes (fuzzer will discover valid structures)
-                vec![]
+            TypeInfo::UserDefined(type_name) => {
+                // Look up the type definition and serialize it recursively
+                if let Some(type_def) = self.type_defs.iter().find(|t| t.name() == type_name) {
+                    match type_def {
+                        TypeDefinition::Struct(s) => {
+                            let mut data = Vec::new();
+                            // Serialize each field with minimal values
+                            for field in &s.fields {
+                                data.extend(self.serialize_minimal_value(&field.type_info, field.optional));
+                            }
+                            data
+                        }
+                        TypeDefinition::Enum(_) => {
+                            // Minimal enum is first variant (discriminant = 0 in u32)
+                            vec![0, 0, 0, 0]
+                        }
+                    }
+                } else {
+                    // Unknown type - return empty bytes as fallback
+                    vec![]
+                }
             }
         }
     }
@@ -369,7 +386,29 @@ impl<'a> CorpusGenerator<'a> {
                 data.extend(self.serialize_maximal_value(inner, false));
                 data
             }
-            TypeInfo::UserDefined(_) => vec![],
+            TypeInfo::UserDefined(type_name) => {
+                // Look up the type definition and serialize it recursively
+                if let Some(type_def) = self.type_defs.iter().find(|t| t.name() == type_name) {
+                    match type_def {
+                        TypeDefinition::Struct(s) => {
+                            let mut data = Vec::new();
+                            // Serialize each field with maximal values
+                            for field in &s.fields {
+                                data.extend(self.serialize_maximal_value(&field.type_info, field.optional));
+                            }
+                            data
+                        }
+                        TypeDefinition::Enum(_) => {
+                            // Maximal enum is first variant with max values (discriminant = 0 in u32)
+                            // For simplicity, just use discriminant 0 like minimal
+                            vec![0, 0, 0, 0]
+                        }
+                    }
+                } else {
+                    // Unknown type - return empty bytes as fallback
+                    vec![]
+                }
+            }
         }
     }
 

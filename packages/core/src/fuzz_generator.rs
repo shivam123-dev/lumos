@@ -318,13 +318,22 @@ impl<'a> FuzzGenerator<'a> {
 }
 
 /// Convert PascalCase to snake_case
+/// Handles acronyms intelligently (e.g., NFTMetadata -> nft_metadata, not n_f_t_metadata)
 fn to_snake_case(s: &str) -> String {
     let mut result = String::new();
+    let chars: Vec<char> = s.chars().collect();
 
-    for (i, ch) in s.chars().enumerate() {
+    for (i, &ch) in chars.iter().enumerate() {
         if ch.is_uppercase() {
-            // Add underscore before uppercase letter if not the first character
-            if i > 0 {
+            // Add underscore before uppercase letter if:
+            // 1. Not the first character
+            // 2. AND (next char is lowercase OR previous char is lowercase)
+            // This keeps consecutive uppercase letters together (acronyms)
+            let should_add_underscore = i > 0
+                && (i + 1 < chars.len() && chars[i + 1].is_lowercase()
+                    || i > 0 && chars[i - 1].is_lowercase());
+
+            if should_add_underscore {
                 result.push('_');
             }
             result.push(ch.to_lowercase().next().unwrap());
@@ -393,8 +402,10 @@ mod tests {
     #[test]
     fn test_to_snake_case() {
         assert_eq!(to_snake_case("PlayerAccount"), "player_account");
-        assert_eq!(to_snake_case("NFTMetadata"), "n_f_t_metadata");
+        assert_eq!(to_snake_case("NFTMetadata"), "nft_metadata"); // Improved: handles acronyms
         assert_eq!(to_snake_case("SimpleType"), "simple_type");
+        assert_eq!(to_snake_case("NFT"), "nft"); // Pure acronym
+        assert_eq!(to_snake_case("HTTPServer"), "http_server"); // Acronym + word
     }
 
     #[test]

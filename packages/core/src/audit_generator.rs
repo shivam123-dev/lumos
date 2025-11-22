@@ -252,7 +252,31 @@ impl<'a> AuditGenerator<'a> {
         ];
 
         let lower = field_name.to_lowercase();
-        authority_keywords.iter().any(|keyword| lower.contains(keyword))
+
+        // Check for exact matches or as complete words (prefix/suffix with underscore)
+        authority_keywords.iter().any(|keyword| {
+            // Exact match
+            if lower == *keyword {
+                return true;
+            }
+
+            // Match as prefix (e.g., "owner_id", "admin_key")
+            if lower.starts_with(&format!("{}_", keyword)) {
+                return true;
+            }
+
+            // Match as suffix (e.g., "pool_owner", "vault_authority")
+            if lower.ends_with(&format!("_{}", keyword)) {
+                return true;
+            }
+
+            // Match in middle (e.g., "multi_owner_account")
+            if lower.contains(&format!("_{}_", keyword)) {
+                return true;
+            }
+
+            false
+        })
     }
 
     /// Check if a field is used for arithmetic operations

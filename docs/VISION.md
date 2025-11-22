@@ -36,6 +36,24 @@ No unified, typed, programmable workflow engine exists for modern developers—e
 
 ## Where We're Going
 
+> **⚠️ Important Note on Scope & Timeline**
+>
+> This vision document outlines **long-term aspirations** for LUMOS beyond its core mission as a schema language.
+>
+> **Current Focus (v0.1.x - v1.x):**
+> - Schema language remains the **primary focus**
+> - All improvements, features, and releases will center on schema generation
+> - Community examples, documentation, and tooling for schemas
+> - Stability and production-readiness for schema use cases
+>
+> **Future Exploration (v2.0+, 2026+):**
+> - The workflow programming language vision is **exploratory**
+> - Development will only begin after v1.0 is mature and stable
+> - Community feedback will guide whether/when to pursue this direction
+> - The schema DSL will always remain a core, standalone feature
+>
+> **No Breaking Changes:** The transition from schema DSL to programming language (if pursued) will be gradual, opt-in, and backwards-compatible.
+
 ### The Evolution
 
 ```
@@ -43,9 +61,13 @@ LUMOS v0.1.x (Today)
     ↓
 Schema DSL for Solana
     ↓
-LUMOS 2.0 (Future)
+LUMOS 1.0 (2026)
     ↓
-Typed Workflow Programming Language
+Mature, Stable Schema Language
+    ↓
+LUMOS 2.0 (Future - TBD)
+    ↓
+Typed Workflow Programming Language (Exploratory)
 ```
 
 ### Phase 1: Schema Language ✅ (Complete)

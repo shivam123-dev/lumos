@@ -176,8 +176,8 @@ impl<'a> SizeCalculator<'a> {
         let mut max_variant_size = 0;
         let mut warnings = Vec::new();
 
-        // Borsh enum discriminant (1 byte for < 256 variants, 4 bytes for >= 256)
-        let discriminant_size = if enum_def.variants.len() < 256 { 1 } else { 4 };
+        // Borsh enum discriminant is always u32 (4 bytes) regardless of variant count
+        let discriminant_size = 4;
 
         field_breakdown.push(FieldSize {
             name: "discriminant".to_string(),

@@ -1320,6 +1320,13 @@ fn generate_audit_markdown(
     content.push_str(&format!("**Total Checks:** {}\n\n", checklist.len()));
 
     content.push_str("---\n\n");
+    content.push_str("## ⚠️ Important Disclaimer\n\n");
+    content.push_str("**This automated checklist is a supplementary tool and does NOT replace professional security audits.**\n\n");
+    content.push_str("- Generated checklists identify common vulnerability patterns based on schema structure\n");
+    content.push_str("- They cannot detect logic bugs, business logic flaws, or complex attack vectors\n");
+    content.push_str("- **Always conduct thorough manual code review and professional security audits** before deploying to production\n");
+    content.push_str("- Consider engaging professional security auditors for mainnet deployments\n\n");
+    content.push_str("---\n\n");
     content.push_str("## How to Use This Checklist\n\n");
     content.push_str("- [ ] = Not checked yet\n");
     content.push_str("- [x] = Verified and compliant\n");
