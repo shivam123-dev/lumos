@@ -82,10 +82,10 @@ LUMOS is now a complete, production-ready schema language for Solana development
 
 ### 6.3 Security & Validation
 
-- [ ] Static analysis for common vulnerabilities
-- [ ] Account size overflow detection
-- [ ] Security audit checklist generator
-- [ ] Fuzzing support for generated code
+- [x] Static analysis for common vulnerabilities
+- [x] Account size overflow detection
+- [x] Security audit checklist generator
+- [x] Fuzzing support for generated code
 
 ---
 
@@ -198,4 +198,4 @@ See an opportunity to help? Check our [Contributing Guide](CONTRIBUTING.md) or:
 
 **This roadmap is a living document** - priorities may shift based on community feedback and ecosystem needs.
 
-**Last Updated**: November 21, 2025
+**Last Updated**: November 22, 2025
