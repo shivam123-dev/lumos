@@ -33,7 +33,7 @@ lumos generate <SCHEMA_FILE> [OPTIONS]
 | `--dry-run` | Preview changes without writing files |
 | `--backup` | Create `.backup` files before overwriting |
 | `--show-diff` | Show diff and ask for confirmation before writing |
-| `--address <PROGRAM_ID>` | Anchor program id to embed in generated Anchor code (when schema uses `#[account]`). If omitted the CLI will prompt interactively; in non-interactive contexts a sentinel placeholder will be used which causes a compile-time error until replaced. |
+| `--address <PROGRAM_ID>` | Anchor program id to embed in generated Anchor code (required when schema uses `#[account]`). If omitted, the CLI will return an error and generation will not proceed. |
 
 #### Examples
 
