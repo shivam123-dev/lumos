@@ -844,10 +844,6 @@ fn run_watch_mode(schema_path: &Path, output_dir: Option<&Path>, address: Option
         use notify::{RecursiveMode, Watcher};
         use std::sync::mpsc::channel;
         use std::time::Duration;
-    use notify::{RecursiveMode, Watcher};
-    use std::sync::mpsc::channel;
-    use std::time::Duration;
-
         let schema_path = schema_path.to_path_buf();
     let output_dir_buf = output_dir.map(|p| p.to_path_buf());
 
