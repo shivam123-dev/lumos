@@ -242,10 +242,6 @@ Example (embed program id):
 lumos generate schema.lumos --address 5Hj3...xyz
 ```
 
-Example (required):
-```bash
-lumos generate schema.lumos --address 5Hj3...xyz
-```
 
 ---
 
