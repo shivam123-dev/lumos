@@ -149,7 +149,6 @@ fn test_e2e_gaming_schema_rust_compiles() {
 
 #[test]
 fn test_anchor_placeholder_is_sentinel() {
-    use tempfile::TempDir;
 
     // Ensure env var is not set so helper uses sentinel
     std::env::remove_var("LUMOS_TEST_ANCHOR_PROGRAM_ID");
